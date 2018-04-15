@@ -1,4 +1,5 @@
-from .client import Client, INTENT_TOPIC
+from .client import Client, INTENT_TOPIC, DISCOVERY_PING_TOPIC
+from .message import Message
 from .request import Request
 from .broker import BrokerConfig
 from .version import __version__
@@ -22,11 +23,10 @@ class SkillClient(Client):
     :type intents: list
     :param env: List of configuration variables needed by this skill
     :type env: list
+
     """
 
     super(SkillClient, self).__init__(name='sdk')
-
-    # TODO make a skill class shared between the sdk and the core
 
     self.name = name
     self.version = version
@@ -39,13 +39,24 @@ class SkillClient(Client):
   def __str__(self):
     return '%s %s - %s' % (self.name, self.version, self.description or 'No description')
 
+  def _handle_message(self, handler, message):
+    """Handle a single message, forward it to the given handler and creates
+    a new request object.
+    """
+    
+    handler(Request(self, message), message)
+
   def on_connect(self, client, userdata, flags, rc):
     super(SkillClient, self).on_connect(client, userdata, flags, rc)
 
+    self.subscribe_json(DISCOVERY_PING_TOPIC, self.on_discovery_request)
+
     for intent in self.intents:
       topic = INTENT_TOPIC % intent.name
-      self.subscribe_json(topic, lambda d, r: intent.handler(Request(d, r)))
-      self.log.info('Subscribed to topic %s' % topic)
+      self.subscribe_json(topic, lambda d, r: self._handle_message(intent.handler, Message(d, r)))
+
+  def on_discovery_request(self, data, raw):
+    self.log.debug('Discovery request from %s' % data)
 
   def run(self):
     """Parses current os args and run the MQTT loop.

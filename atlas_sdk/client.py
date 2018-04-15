@@ -2,10 +2,13 @@ from .broker import BrokerConfig
 import paho.mqtt.client as mqtt
 import logging, json
 
-TERMINATE_TOPIC = 'atlas/%s/dialog/terminate'
-PARSE_TOPIC = 'atlas/%s/dialog/parse'
-ASK_TOPIC = 'atlas/%s/dialog/ask'
-SHOW_TOPIC = 'atlas/%s/dialog/show'
+DISCOVERY_PING_TOPIC = 'atlas/discovery/ping'
+DISCOVERY_PONG_TOPIC = 'atlas/discovery/pong'
+
+DIALOG_TERMINATE_TOPIC = 'atlas/%s/dialog/terminate'
+DIALOG_PARSE_TOPIC = 'atlas/%s/dialog/parse'
+DIALOG_ASK_TOPIC = 'atlas/%s/dialog/ask'
+DIALOG_SHOW_TOPIC = 'atlas/%s/dialog/show'
 
 INTENT_TOPIC = 'atlas/intents/%s'
 
@@ -93,6 +96,7 @@ class Client:
 
     self._handlers[ret][topic] = handler
     self._client.subscribe(topic)
+    self.log.info('Subscribed to topic %s' % topic)
 
   def subscribe_json(self, topic, handler):
     """Subscribe to a topic with the given handler.
