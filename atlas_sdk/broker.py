@@ -21,5 +21,14 @@ class BrokerConfig:
     self.username = username
     self.password = password
 
+  def is_secured(self):
+    """Checks if the broker configuration used credentials for the connection.
+
+    :rtype: bool
+
+    """
+
+    return self.username and self.password
+
   def __str__(self):
     return '%s:%s@%s:%s' % (self.username, self.password, self.host, self.port)

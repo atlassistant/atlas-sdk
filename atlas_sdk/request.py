@@ -38,13 +38,15 @@ class Request():
 
     self._client.publish(DIALOG_ASK_TOPIC % self._message.id, json.dumps(additional_data))
 
-  def show(self, text, additional_data={}):
+  def show(self, text, additional_data={}, terminate=False):
     """Presents data to the user.
 
     :param text: Text to show to the user
     :type text: str
     :param additional_data: Additional data to add to the payload
     :type additional_data: dict
+    :param terminate: Wether or not the dialog should be terminated
+    :type terminate: bool
 
     """
 
@@ -53,6 +55,9 @@ class Request():
     })
     
     self._client.publish(DIALOG_SHOW_TOPIC % self._message.id, json.dumps(additional_data))
+
+    if terminate:
+      self.terminate()
 
   def terminate(self):
     """Terminates the dialog for this request. It informs the system that the skill

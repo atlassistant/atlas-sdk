@@ -28,4 +28,5 @@ if __name__ == '__main__':
       Env('A_USELESS_PARAMETER'),
     ],
   )
+
   echo_skill.run()

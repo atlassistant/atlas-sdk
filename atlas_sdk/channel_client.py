@@ -3,7 +3,11 @@ from .client import Client, \
 import json
 
 class ChannelClient(Client):
-  """A channel client should be used by client only. It leverages messages used by a channel.
+  """A channel client should be used by end client only. It leverages messages used by a channel.
+
+  It represents connections with the broker that provides user inputs, wether it's voice, text or whatever. It is instantiated
+  on a per user basis.
+
   """
     
   def __init__(self, client_id, user_id, on_ask=None, on_show=None, on_terminate=None):
@@ -53,6 +57,8 @@ class ChannelClient(Client):
 
   def create(self):
     """Inform the atlas engine of the channel creation.
+
+    This is used by atlas to provide an agent for this channel.
     """
         
     self.publish(self.CHANNEL_CREATE_TOPIC, json.dumps({ 'uid': self.uid }))

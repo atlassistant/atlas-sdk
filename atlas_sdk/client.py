@@ -73,7 +73,7 @@ class Client:
 
     self._client.connect(config.host, config.port)
 
-    if config.username and config.password:
+    if config.is_secured():
       self._client.username_pw_set(config.username, config.password)
 
     if threaded:
@@ -108,7 +108,7 @@ class Client:
 
     self._handlers[ret][topic] = handler
     self._client.subscribe(topic)
-    self.log.info('Subscribed to topic %s' % topic)
+    self.log.debug('Subscribed to topic %s' % topic)
 
   def subscribe_json(self, topic, handler):
     """Subscribe to a topic with the given handler.

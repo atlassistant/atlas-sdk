@@ -18,6 +18,7 @@ class Message():
 
     self.id = data.get('__id')
     self.uid = data.get('__uid')
+    self.lang = data.get('__lang')
     self.atlas_version = data.get('__version')
 
   def env(self, key):
