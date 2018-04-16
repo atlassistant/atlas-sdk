@@ -1,16 +1,28 @@
+"""This file contains all topics available for atlas for convenience since the SDK
+is also used by atlas core itself.
+"""
+
 from .broker import BrokerConfig
 import paho.mqtt.client as mqtt
 import logging, json
 
+# Discovery related topics
+
 DISCOVERY_PING_TOPIC = 'atlas/discovery/ping'
 DISCOVERY_PONG_TOPIC = 'atlas/discovery/pong'
+
+# Dialog related topics, communication with an agent
 
 DIALOG_TERMINATE_TOPIC = 'atlas/%s/dialog/terminate'
 DIALOG_PARSE_TOPIC = 'atlas/%s/dialog/parse'
 DIALOG_ASK_TOPIC = 'atlas/%s/dialog/ask'
 DIALOG_SHOW_TOPIC = 'atlas/%s/dialog/show'
 
+# Topic where request would be made available
+
 INTENT_TOPIC = 'atlas/intents/%s'
+
+# Channel related topics
 
 CHANNEL_ASK_TOPIC = 'atlas/%s/channel/ask'
 CHANNEL_SHOW_TOPIC = 'atlas/%s/channel/show'

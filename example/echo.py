@@ -1,7 +1,5 @@
 import logging
-from atlas_sdk import SkillClient, Intent, Slot, Env
-from atlas_sdk.message import Message
-from atlas_sdk.request import Request
+from atlas_sdk import SkillClient, Intent, Slot, Env, Message, Request
 
 def handle_echo(request, message):
   """Handle echo request.

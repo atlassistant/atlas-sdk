@@ -20,6 +20,17 @@ class Request():
     self._message = message
 
   def ask(self, slot, text, additional_data={}):
+    """Asks a question to the user to require its inputs.
+
+    :param slot: Name of the slot attached to this question
+    :type slot: str
+    :param text: Text to show to the user
+    :type text: str
+    :param additional_data: Additional data to add to the payload
+    :type additional_data: dict
+
+    """
+
     additional_data.update({
       'text': text,
       'slot': slot,
@@ -28,6 +39,15 @@ class Request():
     self._client.publish(DIALOG_ASK_TOPIC % self._message.id, json.dumps(additional_data))
 
   def show(self, text, additional_data={}):
+    """Presents data to the user.
+
+    :param text: Text to show to the user
+    :type text: str
+    :param additional_data: Additional data to add to the payload
+    :type additional_data: dict
+
+    """
+
     additional_data.update({
       'text': text,
     })
@@ -35,4 +55,9 @@ class Request():
     self._client.publish(DIALOG_SHOW_TOPIC % self._message.id, json.dumps(additional_data))
 
   def terminate(self):
+    """Terminates the dialog for this request. It informs the system that the skill
+    has ended its work.
+    
+    """
+
     self._client.publish(DIALOG_TERMINATE_TOPIC % self._message.id)
