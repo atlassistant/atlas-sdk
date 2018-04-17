@@ -1,5 +1,5 @@
 from .client import Client, \
-  CHANNEL_CREATE_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_SHOW_TOPIC, CHANNEL_TERMINATE_TOPIC, DIALOG_PARSE_TOPIC
+  CHANNEL_CREATE_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_SHOW_TOPIC, CHANNEL_TERMINATE_TOPIC, DIALOG_PARSE_TOPIC, CHANNEL_WORK_TOPIC
 import json
 
 class ChannelClient(Client):
@@ -10,7 +10,7 @@ class ChannelClient(Client):
 
   """
     
-  def __init__(self, client_id, user_id, on_ask=None, on_show=None, on_terminate=None):
+  def __init__(self, client_id, user_id, on_ask=None, on_show=None, on_terminate=None, on_work=None):
     """Constructs a new ChannelClient.
     
     :param client_id: Client ID to use, it's commonly a session id
@@ -23,6 +23,8 @@ class ChannelClient(Client):
     :type on_show: callable
     :param on_terminate: Handler when the dialog engine wants the channel to terminate the dialog
     :type on_terminate: callable
+    :param on_work: Handler when the dialog engine wants to inform the channel that a work has been started
+    :type on_work: callable
 
     """
 
@@ -33,11 +35,13 @@ class ChannelClient(Client):
     self.CHANNEL_ASK_TOPIC = CHANNEL_ASK_TOPIC % client_id
     self.CHANNEL_SHOW_TOPIC = CHANNEL_SHOW_TOPIC % client_id
     self.CHANNEL_TERMINATE_TOPIC = CHANNEL_TERMINATE_TOPIC % client_id
+    self.CHANNEL_WORK_TOPIC = CHANNEL_WORK_TOPIC % client_id
     self.DIALOG_PARSE_TOPIC = DIALOG_PARSE_TOPIC % client_id
 
     self.on_ask = on_ask or self.handler_not_set
     self.on_show = on_show or self.handler_not_set
     self.on_terminate = on_terminate or self.handler_not_set
+    self.on_work = on_work or self.handler_not_set
 
     self.uid = user_id
 
@@ -49,6 +53,7 @@ class ChannelClient(Client):
     self.subscribe_json(self.CHANNEL_ASK_TOPIC, self.on_ask)
     self.subscribe_json(self.CHANNEL_SHOW_TOPIC, self.on_show)
     self.subscribe_void(self.CHANNEL_TERMINATE_TOPIC, self.on_terminate)
+    self.subscribe_void(self.CHANNEL_WORK_TOPIC, self.on_work)
 
   def stop(self):
     self.destroy()

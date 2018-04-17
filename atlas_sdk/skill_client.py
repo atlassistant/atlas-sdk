@@ -1,5 +1,4 @@
 from .client import Client, INTENT_TOPIC, DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC
-from .message import Message
 from .request import Request
 from .broker import BrokerConfig
 from .version import __version__
@@ -42,13 +41,6 @@ class SkillClient(Client):
   def __str__(self):
     return '%s %s - %s' % (self.name, self.version, self.description or 'No description')
 
-  def _handle_message(self, handler, message):
-    """Handle a single message, forward it to the given handler and creates
-    a new request object.
-    """
-    
-    handler(Request(self, message), message)
-
   def on_connect(self, client, userdata, flags, rc):
     super(SkillClient, self).on_connect(client, userdata, flags, rc)
 
@@ -56,7 +48,7 @@ class SkillClient(Client):
 
     for intent in self.intents:
       topic = INTENT_TOPIC % intent.name
-      self.subscribe_json(topic, lambda d, r: self._handle_message(intent.handler, Message(d, r)))
+      self.subscribe_json(topic, lambda d, r: intent.handler(Request(self, d, r)))
 
   def on_discovery_request(self, data, raw):
     self.log.debug('Discovery request from %s' % data)

@@ -4,7 +4,6 @@ from .broker import BrokerConfig
 from .intent import Intent
 from .slot import Slot
 from .env import Env
-from .message import Message
 from .request import Request
 from .version import __version__
 

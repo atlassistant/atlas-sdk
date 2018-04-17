@@ -1,17 +1,16 @@
 import logging
-from atlas_sdk import SkillClient, Intent, Slot, Env, Message, Request
+from atlas_sdk import SkillClient, Intent, Slot, Env, Request
 
-def handle_echo(request, message):
+def handle_echo(request):
   """Handle echo request.
   
   :type request: Request
-  :type message: Message
   
   """
 
-  print(message.slot('date'))
+  print(request.slot('date'))
 
-  request.ask('message', 'What about it?')
+  request.show('Hello from echo!')
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG)

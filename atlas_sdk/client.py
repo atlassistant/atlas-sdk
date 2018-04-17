@@ -26,6 +26,7 @@ INTENT_TOPIC = 'atlas/intents/%s'
 
 CHANNEL_ASK_TOPIC = 'atlas/%s/channel/ask'
 CHANNEL_SHOW_TOPIC = 'atlas/%s/channel/show'
+CHANNEL_WORK_TOPIC = 'atlas/%s/channel/work'
 CHANNEL_TERMINATE_TOPIC = 'atlas/%s/channel/terminate'
 CHANNEL_CREATE_TOPIC = 'atlas/%s/channel/create'
 CHANNEL_DESTROY_TOPIC = 'atlas/%s/channel/destroy'
@@ -106,6 +107,8 @@ class Client:
     """Inner subscribe which append the handler and subscribe to the topic.
     """
 
+    # TODO May be we should use client.message_callback_add
+
     self._handlers[ret][topic] = handler
     self._client.subscribe(topic)
     self.log.debug('Subscribed to topic %s' % topic)
@@ -155,10 +158,10 @@ class Client:
     self._subscribe(topic, 'raw', handler)
 
   def on_connect(self, client, userdata, flags, rc):
-    self.log.info('Connected to broker')
+    self.log.info('✔️ Connected to broker')
 
   def on_disconnect(self, client, userdata, rc):
-    self.log.info('Disconnected')
+    self.log.info('❌ Disconnected')
 
   def on_message(self, client, userdata, msg):
     self.log.debug('Received message %s - %s' % (msg.topic, msg.payload))

@@ -1,23 +1,69 @@
 from .client import DIALOG_ASK_TOPIC, DIALOG_SHOW_TOPIC, DIALOG_TERMINATE_TOPIC
 import json
 
+SID_KEY = '__sid'
+UID_KEY = '__uid'
+LANG_KEY = '__lang'
+VERSION_KEY = '__version'
+ENV_KEY = '__env'
+
 class Request():
   """Represents a wrapper around a single message request with handy methods
   to ease the development of skills.
   """
   
-  def __init__(self, client, message):
+  def __init__(self, client, data, raw):
     """Constructs a new request object.
 
     :param client: Skill client to use
     :type client: SkillClient
-    :param message: Message attached to this request
-    :type message: Message
+    :param data: Json data of the message
+    :type data: dict
+    :param raw: Raw message
+    :type raw: str
 
     """
 
     self._client = client
-    self._message = message
+
+    self.data = data
+    self.raw = raw
+
+    # Extract common properties
+
+    self.sid = data.get(SID_KEY)
+    self.uid = data.get(UID_KEY)
+    self.lang = data.get(LANG_KEY)
+    self.version = data.get(VERSION_KEY)
+
+  def env(self, key):
+    """Retrieve a configuration key for this request.
+
+    :param key: Key to retrieve
+    :type key: str
+
+    """
+
+    return self.data.get(ENV_KEY, {}).get(key)
+
+  def slot(self, name, default=None, converter=None):
+    """Handy method to retrieve a slot value for this request.
+
+    :param name: Slot name to retrieve
+    :type name: str
+    :param default: Default value if not found
+    :type default: any
+    :param converter: Converter to use to transform the parameter if set
+    :type converter: callable
+    
+    """
+
+    slot = self.data.get(name, default)
+
+    if converter and slot:
+      return converter(slot)
+
+    return slot
 
   def ask(self, slot, text, additional_data={}):
     """Asks a question to the user to require its inputs.
@@ -36,7 +82,7 @@ class Request():
       'slot': slot,
     })
 
-    self._client.publish(DIALOG_ASK_TOPIC % self._message.id, json.dumps(additional_data))
+    self._client.publish(DIALOG_ASK_TOPIC % self.sid, json.dumps(additional_data))
 
   def show(self, text, additional_data={}, terminate=False):
     """Presents data to the user.
@@ -54,7 +100,7 @@ class Request():
       'text': text,
     })
     
-    self._client.publish(DIALOG_SHOW_TOPIC % self._message.id, json.dumps(additional_data))
+    self._client.publish(DIALOG_SHOW_TOPIC % self.sid, json.dumps(additional_data))
 
     if terminate:
       self.terminate()
@@ -65,4 +111,4 @@ class Request():
     
     """
 
-    self._client.publish(DIALOG_TERMINATE_TOPIC % self._message.id)
+    self._client.publish(DIALOG_TERMINATE_TOPIC % self.sid)
