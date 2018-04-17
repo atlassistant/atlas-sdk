@@ -45,7 +45,7 @@ if __name__ == '__main__':
     description='Respond to echo intent',
     version='1.0.0',
     intents=[
-      # Handle "echo" intent. When the NLU returns this intent, the agent will call this intent and our handler
+      # Handle "echo" intent. When the NLU returns this intent, the agent will call this skill and our handler
       Intent('echo', handle_echo, slots=[Slot('message')]),
     ],
     env=[
