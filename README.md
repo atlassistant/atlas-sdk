@@ -35,7 +35,7 @@ def handle_echo(request):
     return request.ask('date', 'You should provide a date?!')
 
   # Show something in the channel from which this request has been started
-  request.show('Hello from echo!', terminate=True)
+  request.show('Hello from echo! Env was %s' % request.env('A_USELESS_PARAMETER'), terminate=True)
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG)
