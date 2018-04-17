@@ -1,6 +1,7 @@
 from .client import DIALOG_ASK_TOPIC, DIALOG_SHOW_TOPIC, DIALOG_TERMINATE_TOPIC
 import json
 
+CID_KEY = '__cid'
 SID_KEY = '__sid'
 UID_KEY = '__uid'
 LANG_KEY = '__lang'
@@ -31,6 +32,7 @@ class Request():
 
     # Extract common properties
 
+    self.cid = data.get(CID_KEY)
     self.sid = data.get(SID_KEY)
     self.uid = data.get(UID_KEY)
     self.lang = data.get(LANG_KEY)
@@ -78,6 +80,7 @@ class Request():
     """
 
     additional_data.update({
+      CID_KEY: self.cid,
       'text': text,
       'slot': slot,
     })
@@ -97,6 +100,7 @@ class Request():
     """
 
     additional_data.update({
+      CID_KEY: self.cid,
       'text': text,
     })
     
@@ -111,4 +115,6 @@ class Request():
     
     """
 
-    self._client.publish(DIALOG_TERMINATE_TOPIC % self.sid)
+    self._client.publish(DIALOG_TERMINATE_TOPIC % self.sid, json.dumps({
+      CID_KEY: self.cid,
+    }))

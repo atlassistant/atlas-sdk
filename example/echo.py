@@ -8,6 +8,7 @@ def handle_echo(request):
   
   """
 
+  print(request.cid)
   print(request.slot('date'))
 
   request.show('Hello from echo!')
