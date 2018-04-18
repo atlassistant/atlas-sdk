@@ -1,8 +1,10 @@
-from atlas_sdk import __version__, __name__
 from setuptools import setup
 
 setup(
-  name=__name__,
-  version=__version__,
+  name='atlas_sdk',
+  version='0.1.0',
   packages=['atlas_sdk'],
+  install_requires=[
+    'paho-mqtt==1.3.1'
+  ],
 )
