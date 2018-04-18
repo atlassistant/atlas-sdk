@@ -2,6 +2,7 @@ from .client import Client, \
   CHANNEL_CREATE_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_SHOW_TOPIC, CHANNEL_TERMINATE_TOPIC, DIALOG_PARSE_TOPIC, CHANNEL_WORK_TOPIC, DISCOVERY_PING_TOPIC
 import json
 from datetime import datetime
+from dateutil.parser import parse
 
 class ChannelClient(Client):
   """A channel client should be used by end client only. It leverages messages used by a channel.
@@ -59,9 +60,22 @@ class ChannelClient(Client):
     self.subscribe_void(self.CHANNEL_WORK_TOPIC, self.on_work)
 
   def _check_still_connected(self, data, raw):
-    # TODO check if the channel was created prior to the started_at parameter of the discovery request
+    """Checks if the channel is still connected to the client and if its not, reconnects it.
 
-    pass
+    :param data: JSON data received
+    :type data: dict
+    :param raw: Raw payload
+    :type raw: str
+
+    """
+
+    start_date_str = data.get('started_at')
+
+    if start_date_str:
+      start_date = parse(start_date_str)
+
+      if start_date > self._created_at:
+        self.create()
 
   def stop(self):
     self.destroy()
