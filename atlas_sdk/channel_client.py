@@ -1,6 +1,7 @@
 from .client import Client, \
-  CHANNEL_CREATE_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_SHOW_TOPIC, CHANNEL_TERMINATE_TOPIC, DIALOG_PARSE_TOPIC, CHANNEL_WORK_TOPIC
+  CHANNEL_CREATE_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_SHOW_TOPIC, CHANNEL_TERMINATE_TOPIC, DIALOG_PARSE_TOPIC, CHANNEL_WORK_TOPIC, DISCOVERY_PING_TOPIC
 import json
+from datetime import datetime
 
 class ChannelClient(Client):
   """A channel client should be used by end client only. It leverages messages used by a channel.
@@ -44,6 +45,7 @@ class ChannelClient(Client):
     self.on_work = on_work or self.handler_not_set
 
     self.uid = user_id
+    self._created_at = None
 
   def on_connect(self, client, userdata, flags, rc):
     super(ChannelClient, self).on_connect(client, userdata, flags, rc)
@@ -52,8 +54,14 @@ class ChannelClient(Client):
 
     self.subscribe_json(self.CHANNEL_ASK_TOPIC, self.on_ask)
     self.subscribe_json(self.CHANNEL_SHOW_TOPIC, self.on_show)
+    self.subscribe_json(DISCOVERY_PING_TOPIC, self._check_still_connected)
     self.subscribe_void(self.CHANNEL_TERMINATE_TOPIC, self.on_terminate)
     self.subscribe_void(self.CHANNEL_WORK_TOPIC, self.on_work)
+
+  def _check_still_connected(self, data, raw):
+    # TODO check if the channel was created prior to the started_at parameter of the discovery request
+
+    pass
 
   def stop(self):
     self.destroy()
@@ -65,6 +73,8 @@ class ChannelClient(Client):
 
     This is used by atlas to provide an agent for this channel.
     """
+
+    self._created_at = datetime.utcnow()
         
     self.publish(self.CHANNEL_CREATE_TOPIC, json.dumps({ 'uid': self.uid }))
 
