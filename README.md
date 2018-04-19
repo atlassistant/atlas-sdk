@@ -7,9 +7,9 @@ Python SDK for the [atlas](https://github.com/atlassistant/atlas) assistant!
 
 *pip maybe...*
 
-`git clone` this repository and run `python setup.py install`. To make `atlas_sdk` available as a package, you must run `python setup.py develop` inside this folder.
+`git clone` this repository and run `python setup.py install`. 
 
-After this last command, you may use `from atlas_sdk import SkillClient` from your skill.
+If you're a developer, prefer the command `python setup.py develop`.
 
 ## Usage
 
