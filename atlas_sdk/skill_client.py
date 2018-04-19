@@ -1,7 +1,8 @@
 from .client import Client, INTENT_TOPIC, DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC
 from .request import Request
 from .broker import BrokerConfig
-from .version import __version__
+from .version import __version__, __version_requirements__
+from semantic_version import Version, Spec
 import logging, argparse, sys, json
 
 class SkillClient(Client):
@@ -35,6 +36,7 @@ class SkillClient(Client):
     self.description = description
     self.intents = intents
     self.env = env
+    self._version_specs = Spec(__version_requirements__)
 
     self.log.info('Created skill %s\n\t%s' % (self, '\n\t'.join([s.__str__() for s in self.env])))
 
@@ -52,6 +54,12 @@ class SkillClient(Client):
 
   def on_discovery_request(self, data, raw):
     self.log.debug('Discovery request from %s' % data)
+
+    version_str = data.get('version')
+
+    if version_str:
+      if not self._version_specs.match(Version(version_str)):
+        self.log.warn('atlas version %s did not match skill requirements %s! Things could go wrong!' % (version_str, __version_requirements__))
 
     self.publish(DISCOVERY_PONG_TOPIC, json.dumps({
       'name': self.name,

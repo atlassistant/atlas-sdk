@@ -75,6 +75,7 @@ class ChannelClient(Client):
       start_date = parse(start_date_str)
 
       if start_date > self._created_at:
+        self.log.info('Recreating the channel, looks like the server has been restarted')
         self.create()
 
   def stop(self):
