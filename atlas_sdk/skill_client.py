@@ -3,7 +3,10 @@ from .request import Request
 from .broker import BrokerConfig
 from .version import __version__, __version_requirements__
 from semantic_version import Version, Spec
-import logging, argparse, sys, json
+import logging, argparse, sys, json, os, gettext, sys
+
+I18N_LOCALE_DIR = 'locale'
+I18N_DOMAIN_NAME = 'messages'
 
 class SkillClient(Client):
   """Main class when you want to describe and register an Atlas skill.
@@ -37,11 +40,28 @@ class SkillClient(Client):
     self.intents = intents
     self.env = env
     self._version_specs = Spec(__version_requirements__)
+    self._translations = {}
 
     self.log.info('Created skill %s\n\t%s' % (self, '\n\t'.join([s.__str__() for s in self.env])))
+    
+    self._load_translations()
 
   def __str__(self):
     return '%s %s - %s' % (self.name, self.version, self.description or 'No description')
+
+  def _load_translations(self):
+    """Load translations for this skill by using python builtin gettext.
+    """
+
+    script_dir = sys.path[0]
+    locale_dir = os.path.join(script_dir, I18N_LOCALE_DIR)
+
+    self.log.info('Loading translations from %s' % locale_dir)
+
+    if os.path.isdir(locale_dir):
+      for ldir in os.listdir(locale_dir):
+        self._translations[ldir] = gettext.translation(I18N_DOMAIN_NAME, localedir=I18N_LOCALE_DIR, languages=[ldir])
+        self.log.debug('Loaded translations for %s' % ldir)
 
   def on_connect(self, client, userdata, flags, rc):
     super(SkillClient, self).on_connect(client, userdata, flags, rc)
@@ -50,7 +70,27 @@ class SkillClient(Client):
 
     for intent in self.intents:
       topic = INTENT_TOPIC % intent.name
-      self.subscribe_json(topic, lambda d, r: intent.handler(Request(self, d, r)))
+      self.subscribe_json(topic, lambda d, r: self._on_intent(intent.handler, d, r))
+
+  def _on_intent(self, handler, data, raw):
+    """Called when a handler should be called.
+
+    :param handler: Handler to call
+    :type handler: callable
+    :param data: JSON data received
+    :type data: dict
+    :param raw: Raw payload
+    :type raw: str
+
+    """
+
+    # TODO i'm not sure if it's good for the localization part
+
+    request = Request(self, data, raw)
+
+    self._translations.get(request.lang, gettext).install()
+
+    handler(request)
 
   def on_discovery_request(self, data, raw):
     self.log.debug('Discovery request from %s' % data)

@@ -11,7 +11,7 @@ def handle_echo(request):
   print(request.cid)
   print(request.slot('date'))
 
-  request.show('Hello from echo!')
+  request.show(_('hello'))
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG)
