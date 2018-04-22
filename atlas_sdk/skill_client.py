@@ -88,7 +88,7 @@ class SkillClient(Client):
 
     request = Request(self, data, raw)
 
-    self._translations.get(request.lang, gettext).install()
+    self._translations.get(request.lang, gettext).install(I18N_DOMAIN_NAME)
 
     handler(request)
 
@@ -135,5 +135,6 @@ class SkillClient(Client):
     
     try:
       self.start(BrokerConfig(**{ k: v for k,v in args_dict.items() if v != None }), False)
-    except:
+    except Exception as e:
+      print (e)
       self.log.info('Stopping %s' % self.name)

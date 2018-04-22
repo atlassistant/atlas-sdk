@@ -32,10 +32,10 @@ def handle_echo(request):
 
   if not date:
     # Ask for user input. Once done, this handler would be called again
-    return request.ask('date', 'You should provide a date?!')
+    return request.ask('date', _('You should provide a date?!'))
 
   # Show something in the channel from which this request has been started
-  request.show('Hello from echo! Env was %s' % request.env('A_USELESS_PARAMETER'), terminate=True)
+  request.show(_('Hello from echo! Env was %s') % request.env('A_USELESS_PARAMETER'), terminate=True)
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG)
@@ -60,3 +60,12 @@ if __name__ == '__main__':
 ### ChannelClient
 
 Used this tiny client to create your own Channel to communicate with **atlas**. A channel can be anything you want such as a Slack bot, a web client, a CLI, a sound system which may handle user inputs issued as voice commands.
+
+## i18n
+
+This SDK use the [standard python package](https://docs.python.org/3/library/i18n.html) to localize skills. A traditional workflow is as follow:
+
+- Use `_('Your message text')` from your own code.
+- Run `xgettext your_script.py -o messages.pot` to generates a translation model
+- Copy the `.pot` file into a `.po` file representing your translation in the skill directory under `locale/<lang>/LC_MESSAGES`
+- Generates a binary translation file with the command `msgfmt messages.po`
