@@ -63,7 +63,10 @@ class Request():
     slot = self.data.get(name, default)
 
     if converter and slot:
-      return converter(slot)
+      if type(slot) is list:
+        return [converter(v) for v in slot]
+      else:
+        return converter(slot)
 
     return slot
 

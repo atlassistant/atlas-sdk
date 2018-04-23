@@ -30,6 +30,9 @@ def handle_echo(request):
 
   date = request.slot('date') # Returns the value of the 'date' slot if set
 
+  # The "date" variable will hold a single string or an array of strings if multiple values are found for the same slot.
+  # This is very usefull if you want to handle cases where the user can enter many values such as "rooms" when turning lights on.
+
   if not date:
     # Ask for user input. Once done, this handler would be called again
     return request.ask('date', _('You should provide a date?!'))
