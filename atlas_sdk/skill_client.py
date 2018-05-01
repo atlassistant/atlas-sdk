@@ -68,9 +68,12 @@ class SkillClient(Client):
 
     self.subscribe_json(DISCOVERY_PING_TOPIC, self.on_discovery_request)
 
+    def make_handler(handler):
+      return lambda d, r: self._on_intent(handler, d, r)
+
     for intent in self.intents:
-      topic = INTENT_TOPIC % intent.name
-      self.subscribe_json(topic, lambda d, r: self._on_intent(intent.handler, d, r))
+      topic = INTENT_TOPIC % intent.name  
+      self.subscribe_json(topic, make_handler(intent.handler))
 
   def _on_intent(self, handler, data, raw):
     """Called when a handler should be called.
@@ -137,4 +140,5 @@ class SkillClient(Client):
       self.start(BrokerConfig(**{ k: v for k,v in args_dict.items() if v != None }), False)
     except Exception as e:
       self.log.debug(e)
+      print (e)
       self.log.info('Stopping %s' % self.name)
