@@ -140,5 +140,4 @@ class SkillClient(Client):
       self.start(BrokerConfig(**{ k: v for k,v in args_dict.items() if v != None }), False)
     except Exception as e:
       self.log.debug(e)
-      print (e)
       self.log.info('Stopping %s' % self.name)
