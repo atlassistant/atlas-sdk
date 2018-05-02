@@ -1,5 +1,7 @@
 from .client import Client, \
-  CHANNEL_CREATE_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_SHOW_TOPIC, CHANNEL_TERMINATE_TOPIC, DIALOG_PARSE_TOPIC, CHANNEL_WORK_TOPIC, DISCOVERY_PING_TOPIC
+  CHANNEL_CREATE_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_SHOW_TOPIC, \
+  CHANNEL_TERMINATE_TOPIC, DIALOG_PARSE_TOPIC, CHANNEL_WORK_TOPIC, DISCOVERY_PING_TOPIC, \
+  CHANNEL_CREATED_TOPIC, CHANNEL_DESTROYED_TOPIC
 import json
 from datetime import datetime
 from dateutil.parser import parse
@@ -12,7 +14,7 @@ class ChannelClient(Client):
 
   """
     
-  def __init__(self, client_id, user_id, on_ask=None, on_show=None, on_terminate=None, on_work=None):
+  def __init__(self, client_id, user_id, on_ask=None, on_show=None, on_terminate=None, on_work=None, on_created=None, on_destroyed=None):
     """Constructs a new ChannelClient.
     
     :param client_id: Client ID to use, it's commonly a session id
@@ -27,13 +29,19 @@ class ChannelClient(Client):
     :type on_terminate: callable
     :param on_work: Handler when the dialog engine wants to inform the channel that a work has been started
     :type on_work: callable
+    :param on_created: Handler when the channel has been successfuly created by atlas
+    :type on_created: callable
+    :param on_destroyed: Handler when the channel has been destroyed by atlas
+    :type on_destroyed: callable
 
     """
 
     super(ChannelClient, self).__init__(client_id, 'channel.' + client_id)
 
     self.CHANNEL_CREATE_TOPIC = CHANNEL_CREATE_TOPIC % client_id
+    self.CHANNEL_CREATED_TOPIC = CHANNEL_CREATED_TOPIC % client_id
     self.CHANNEL_DESTROY_TOPIC = CHANNEL_DESTROY_TOPIC % client_id
+    self.CHANNEL_DESTROYED_TOPIC = CHANNEL_DESTROYED_TOPIC % client_id
     self.CHANNEL_ASK_TOPIC = CHANNEL_ASK_TOPIC % client_id
     self.CHANNEL_SHOW_TOPIC = CHANNEL_SHOW_TOPIC % client_id
     self.CHANNEL_TERMINATE_TOPIC = CHANNEL_TERMINATE_TOPIC % client_id
@@ -44,6 +52,8 @@ class ChannelClient(Client):
     self.on_show = on_show or self.handler_not_set
     self.on_terminate = on_terminate or self.handler_not_set
     self.on_work = on_work or self.handler_not_set
+    self.on_destroyed = on_destroyed or self.handler_not_set
+    self.on_created = on_created or self.handler_not_set
 
     self.uid = user_id
     self._created_at = None
@@ -51,13 +61,15 @@ class ChannelClient(Client):
   def on_connect(self, client, userdata, flags, rc):
     super(ChannelClient, self).on_connect(client, userdata, flags, rc)
 
-    self.create()
-
     self.subscribe_json(self.CHANNEL_ASK_TOPIC, self.on_ask)
     self.subscribe_json(self.CHANNEL_SHOW_TOPIC, self.on_show)
     self.subscribe_json(DISCOVERY_PING_TOPIC, self._check_still_connected)
     self.subscribe_void(self.CHANNEL_TERMINATE_TOPIC, self.on_terminate)
     self.subscribe_void(self.CHANNEL_WORK_TOPIC, self.on_work)
+    self.subscribe_void(self.CHANNEL_DESTROYED_TOPIC, self.on_destroyed)
+    self.subscribe_json(self.CHANNEL_CREATED_TOPIC, self.on_created)
+
+    self.create()
 
   def _check_still_connected(self, data, raw):
     """Checks if the channel is still connected to the client and if its not, reconnects it.

@@ -29,7 +29,9 @@ CHANNEL_SHOW_TOPIC = 'atlas/%s/channel/show'
 CHANNEL_WORK_TOPIC = 'atlas/%s/channel/work'
 CHANNEL_TERMINATE_TOPIC = 'atlas/%s/channel/terminate'
 CHANNEL_CREATE_TOPIC = 'atlas/%s/channel/create'
+CHANNEL_CREATED_TOPIC = 'atlas/%s/channel/created'
 CHANNEL_DESTROY_TOPIC = 'atlas/%s/channel/destroy'
+CHANNEL_DESTROYED_TOPIC = 'atlas/%s/channel/destroyed'
 
 class Client:
   """Client is an helper class to handle messages management.
