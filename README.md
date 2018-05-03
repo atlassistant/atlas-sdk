@@ -5,7 +5,11 @@ Python SDK for the [atlas](https://github.com/atlassistant/atlas) assistant!
 
 ## Installation
 
-*pip maybe...*
+### PIP
+
+`pip install atlas-sdk`
+
+### Source
 
 `git clone` this repository and run `python setup.py install`. 
 
