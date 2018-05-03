@@ -79,10 +79,16 @@ class Client:
     if config.is_secured():
       self._client.username_pw_set(config.username, config.password)
 
-    if threaded:
-      self._client.loop_start()
-    else:
-      self._client.loop_forever()
+    try:
+      if threaded:
+        self._client.loop_start()
+      else:
+        try:
+          self._client.loop_forever()
+        except KeyboardInterrupt:
+          pass # Do nothing on keyboard interrupt
+    except ConnectionRefusedError as e:
+      self.log.critical('Could not connect to the MQTT: %s' % e.strerror)
 
   def stop(self):
     """Stops the broker client.
