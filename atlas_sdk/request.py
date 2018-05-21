@@ -7,6 +7,7 @@ UID_KEY = '__uid'
 LANG_KEY = '__lang'
 VERSION_KEY = '__version'
 ENV_KEY = '__env'
+CONFIRMED_KEY = '__confirmed'
 
 class Request():
   """Represents a wrapper around a single message request with handy methods
@@ -70,6 +71,17 @@ class Request():
 
     return slot
 
+  def has_confirmed(self, step):
+    """Checks if the user has confirmed the given step.
+
+    :param step: Name of the step to check
+    :type step: str
+    :rtype: bool
+    
+    """
+
+    return step in self.data.get(CONFIRMED_KEY, [])
+
   def ask(self, slot, text, additional_data={}):
     """Asks a question to the user to require its inputs.
 
@@ -86,6 +98,29 @@ class Request():
       CID_KEY: self.cid,
       'text': text,
       'slot': slot,
+    })
+
+    self._client.publish(DIALOG_ASK_TOPIC % self.sid, json.dumps(additional_data))
+
+  def confirm(self, step, text, additional_data={}):
+    """Asks the user to confirm the given step.
+
+    The step is a simple label that your skill could use when having multiple confirmations
+    to ask, see has_confirmed(step) for more info.
+
+    :param step: Name of the step to confirm
+    :type step: str
+    :param text: Text to show to the user
+    :type text: str
+    :param additional_data: Additional data to add to the payload
+    :type additional_data: dict
+
+    """
+
+    additional_data.update({
+      CID_KEY: self.cid,
+      'text': text,
+      'confirm': step,
     })
 
     self._client.publish(DIALOG_ASK_TOPIC % self.sid, json.dumps(additional_data))
