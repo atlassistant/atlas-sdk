@@ -1,5 +1,5 @@
 from .client import DIALOG_ASK_TOPIC, DIALOG_SHOW_TOPIC, DIALOG_TERMINATE_TOPIC
-import json
+import json, random
 
 CID_KEY = '__cid'
 SID_KEY = '__sid'
@@ -7,7 +7,20 @@ UID_KEY = '__uid'
 LANG_KEY = '__lang'
 VERSION_KEY = '__version'
 ENV_KEY = '__env'
-CHOICE_KEY = '__choice'
+
+def random_select(element):
+  """If the given parameter is a list, a random item will be selected.
+
+  :param element:
+  :type element: list or str
+  :rtype: str
+
+  """
+
+  if type(element) is list:
+    return random.choice(element)
+
+  return element
 
 class Request():
   """Represents a wrapper around a single message request with handy methods
@@ -38,9 +51,6 @@ class Request():
     self.uid = data.get(UID_KEY)
     self.lang = data.get(LANG_KEY)
     self.version = data.get(VERSION_KEY)
-
-    # It represents the last user choice not attached to a particular slot
-    self.choice = data.get(CHOICE_KEY)
 
   def env(self, key):
     """Retrieve a configuration key for this request.
@@ -74,25 +84,14 @@ class Request():
 
     return slot
 
-  def ask(self, text, slot=None, choices=None, additional_data={}):
+  def ask(self, slot, text, choices=None, additional_data={}):
     """Asks a question to the user to require its inputs.
 
-    If slot is defined, ask is related to a slot so user entry will be parsed by the interpreter
-    to extract and convert it to the appropriate value.
-
-    You can use choices to restrict valid values and present them to the user. For example, if you need
-    to ask the user to choose between valid cuisine types, they must choose one of those defined by your skill
-    when asking for inputs and the slot will be filled with the user choice.
-
-    If slot is not defined, you must define choices. The user will be prompted by using those choices and your skill will be called again, you will be able to use self.choice to check for the selected user choice.
-
-    This is how confirmations such as yes/no are handled.
-
-    :param text: Text to show to the user
-    :type text: str
     :param slot: Name of the slot attached to this question
     :type slot: str
-    :param choices: Choices proposed to the user
+    :param text: Text to show to the user, if a list is given, a random element will be choose
+    :type text: list or str
+    :param choices: Choices proposed to the user, used to restrict valid values
     :type choices: list
     :param additional_data: Additional data to add to the payload
     :type additional_data: dict
@@ -101,7 +100,7 @@ class Request():
 
     additional_data.update({
       CID_KEY: self.cid,
-      'text': text,
+      'text': random_select(text),
       'slot': slot,
       'choices': choices,
     })
@@ -111,8 +110,8 @@ class Request():
   def show(self, text, additional_data={}, terminate=False):
     """Presents data to the user.
 
-    :param text: Text to show to the user
-    :type text: str
+    :param text: Text to show to the user, if a list is given, a random element will be choose
+    :type text: list or str
     :param additional_data: Additional data to add to the payload
     :type additional_data: dict
     :param terminate: Wether or not the dialog should be terminated
@@ -122,7 +121,7 @@ class Request():
 
     additional_data.update({
       CID_KEY: self.cid,
-      'text': text,
+      'text': random_select(text),
     })
     
     self._client.publish(DIALOG_SHOW_TOPIC % self.sid, json.dumps(additional_data))

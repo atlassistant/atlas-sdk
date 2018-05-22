@@ -39,7 +39,9 @@ def handle_echo(request):
 
   if not date:
     # Ask for user input. Once done, this handler would be called again
-    return request.ask(_('You should provide a date?!'), slot='date')
+    # If you pass a list as a second argument, a random element will be choose as the text, this make it
+    # easy for your skill to propose some variants
+    return request.ask('date', _('You should provide a date?!'))
 
   # Show something in the channel from which this request has been started
   request.show(_('Hello from echo! Env was %s') % request.env('A_USELESS_PARAMETER'), terminate=True)
@@ -53,7 +55,7 @@ if __name__ == '__main__':
     version='1.0.0',
     intents=[
       # Handle "echo" intent. When the NLU returns this intent, the agent will call this skill and our handler
-      Intent('echo', handle_echo, slots=[Slot('message')]),
+      Intent('echo', handle_echo, slots=[Slot('date')]),
     ],
     env=[
       # This parameter will be retrieved and made available in the Request argument in your handlers. This parameter is available on a per user basis so each user can have its own set of parameters
