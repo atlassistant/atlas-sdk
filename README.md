@@ -39,7 +39,7 @@ def handle_echo(request):
 
   if not date:
     # Ask for user input. Once done, this handler would be called again
-    return request.ask('date', _('You should provide a date?!'))
+    return request.ask(_('You should provide a date?!'), slot='date')
 
   # Show something in the channel from which this request has been started
   request.show(_('Hello from echo! Env was %s') % request.env('A_USELESS_PARAMETER'), terminate=True)

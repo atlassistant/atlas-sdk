@@ -7,7 +7,7 @@ UID_KEY = '__uid'
 LANG_KEY = '__lang'
 VERSION_KEY = '__version'
 ENV_KEY = '__env'
-CONFIRMED_KEY = '__confirmed'
+CHOICE_KEY = '__choice'
 
 class Request():
   """Represents a wrapper around a single message request with handy methods
@@ -38,6 +38,9 @@ class Request():
     self.uid = data.get(UID_KEY)
     self.lang = data.get(LANG_KEY)
     self.version = data.get(VERSION_KEY)
+
+    # It represents the last user choice not attached to a particular slot
+    self.choice = data.get(CHOICE_KEY)
 
   def env(self, key):
     """Retrieve a configuration key for this request.
@@ -71,24 +74,26 @@ class Request():
 
     return slot
 
-  def has_confirmed(self, step):
-    """Checks if the user has confirmed the given step.
-
-    :param step: Name of the step to check
-    :type step: str
-    :rtype: bool
-    
-    """
-
-    return step in self.data.get(CONFIRMED_KEY, [])
-
-  def ask(self, slot, text, additional_data={}):
+  def ask(self, text, slot=None, choices=None, additional_data={}):
     """Asks a question to the user to require its inputs.
 
-    :param slot: Name of the slot attached to this question
-    :type slot: str
+    If slot is defined, ask is related to a slot so user entry will be parsed by the interpreter
+    to extract and convert it to the appropriate value.
+
+    You can use choices to restrict valid values and present them to the user. For example, if you need
+    to ask the user to choose between valid cuisine types, they must choose one of those defined by your skill
+    when asking for inputs and the slot will be filled with the user choice.
+
+    If slot is not defined, you must define choices. The user will be prompted by using those choices and your skill will be called again, you will be able to use self.choice to check for the selected user choice.
+
+    This is how confirmations such as yes/no are handled.
+
     :param text: Text to show to the user
     :type text: str
+    :param slot: Name of the slot attached to this question
+    :type slot: str
+    :param choices: Choices proposed to the user
+    :type choices: list
     :param additional_data: Additional data to add to the payload
     :type additional_data: dict
 
@@ -98,29 +103,7 @@ class Request():
       CID_KEY: self.cid,
       'text': text,
       'slot': slot,
-    })
-
-    self._client.publish(DIALOG_ASK_TOPIC % self.sid, json.dumps(additional_data))
-
-  def confirm(self, step, text, additional_data={}):
-    """Asks the user to confirm the given step.
-
-    The step is a simple label that your skill could use when having multiple confirmations
-    to ask, see has_confirmed(step) for more info.
-
-    :param step: Name of the step to confirm
-    :type step: str
-    :param text: Text to show to the user
-    :type text: str
-    :param additional_data: Additional data to add to the payload
-    :type additional_data: dict
-
-    """
-
-    additional_data.update({
-      CID_KEY: self.cid,
-      'text': text,
-      'confirm': step,
+      'choices': choices,
     })
 
     self._client.publish(DIALOG_ASK_TOPIC % self.sid, json.dumps(additional_data))
