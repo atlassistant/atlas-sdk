@@ -75,6 +75,9 @@ class SkillClient(Client):
       topic = INTENT_TOPIC % intent.name  
       self.subscribe_json(topic, make_handler(intent.handler))
 
+    # Sends a pong immediately so skill could attach to atlas asap
+    self._pong()
+
   def _on_intent(self, handler, data, raw):
     """Called when a handler should be called.
 
@@ -103,6 +106,12 @@ class SkillClient(Client):
     if version_str:
       if not self._version_specs.match(Version(version_str)):
         self.log.warn('atlas version %s did not match skill requirements %s! Things could go wrong!' % (version_str, __version_requirements__))
+
+    self._pong()
+
+  def _pong(self):
+    """Sends a discovery pong.
+    """
 
     self.publish(DISCOVERY_PONG_TOPIC, json.dumps({
       'name': self.name,
