@@ -1,10 +1,7 @@
 from setuptools import setup
 import os
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-README = os.path.join(ROOT_PATH, 'README.md')
-
-with open(README, encoding='utf8') as f:
+with open('README.md', encoding='utf8') as f:
   readme = f.read()
 
 setup(
@@ -15,8 +12,9 @@ setup(
   url='https://github.com/atlassistant/atlas-sdk',
   author='Julien LEICHER',
   license='GPL-3.0',
-  version='1.1.1',
+  version='1.1.3',
   packages=['atlas_sdk'],
+  include_package_data=True,
   install_requires=[
     'paho-mqtt==1.3.1',
     'python-dateutil==2.7.2',
