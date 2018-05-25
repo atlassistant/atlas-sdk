@@ -8,6 +8,23 @@ LANG_KEY = '__lang'
 VERSION_KEY = '__version'
 ENV_KEY = '__env'
 
+def try_convert(value, converter):
+  """Try to convert the given value.
+
+  Returns None if not possible.
+
+  :param value: Value to convert
+  :type value: any
+  :param converter: Converter to use to transform the parameter if set
+  :type converter: callable
+  :rtype: any
+  """
+
+  try:
+    return converter(value)
+  except:
+    return None
+
 def random_select(element):
   """If the given parameter is a list, a random item will be selected.
 
@@ -78,9 +95,9 @@ class Request():
 
     if converter and slot:
       if type(slot) is list:
-        return [converter(v) for v in slot]
+        return [try_convert(v, converter) for v in slot]
       else:
-        return converter(slot)
+        return try_convert(slot, converter)
 
     return slot
 
@@ -124,7 +141,7 @@ class Request():
       'text': random_select(text),
     })
     
-    self._client.publish(DIALOG_SHOW_TOPIC % self.sid, json.dumps(additional_data))
+    self._client.publish(DIALOG_SHOW_TOPIC % self.sid, json.dumps(additional_data), loop_after=True)
 
     if terminate:
       self.terminate()

@@ -97,7 +97,7 @@ class Client:
     self._client.disconnect()
     self._client.loop_stop()
 
-  def publish(self, topic, payload=None):
+  def publish(self, topic, payload=None, loop_after=False):
     """Publish a message to the given topic.
 
     You must transform the payload before calling this method.
@@ -106,10 +106,15 @@ class Client:
     :type topic: str
     :param payload: Payload to publish
     :type payload: str
+    :param loop_after: Should a network loop be called right after to ensure immediate distribution?
+    :type loop_after: bool
 
     """
 
     self._client.publish(topic, payload)
+
+    if loop_after:
+      self._client.loop()
 
   def _subscribe(self, topic, ret, handler):
     """Inner subscribe which append the handler and subscribe to the topic.
