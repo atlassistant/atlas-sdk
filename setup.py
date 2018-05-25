@@ -7,8 +7,8 @@ with open('README.md', encoding='utf8') as f:
 setup(
   name='atlas_sdk',
   description='Python SDK to interact with atlas',
-  long_description=readme,
   long_description_content_type='text/markdown',
+  long_description=readme,
   url='https://github.com/atlassistant/atlas-sdk',
   author='Julien LEICHER',
   license='GPL-3.0',
