@@ -148,7 +148,7 @@ class Request():
       'cards': cards,
     })
     
-    self._client.publish(DIALOG_SHOW_TOPIC % self.sid, json.dumps(additional_data), loop_after=True)
+    self._client.publish(DIALOG_SHOW_TOPIC % self.sid, json.dumps(additional_data))
 
     if terminate:
       self.terminate()

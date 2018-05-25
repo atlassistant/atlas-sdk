@@ -12,7 +12,7 @@ setup(
   url='https://github.com/atlassistant/atlas-sdk',
   author='Julien LEICHER',
   license='GPL-3.0',
-  version='1.1.5',
+  version='1.1.6',
   packages=['atlas_sdk'],
   include_package_data=True,
   install_requires=[
