@@ -124,11 +124,13 @@ class Request():
 
     self._client.publish(DIALOG_ASK_TOPIC % self.sid, json.dumps(additional_data))
 
-  def show(self, text, additional_data={}, terminate=False):
+  def show(self, text, cards=None, additional_data={}, terminate=False):
     """Presents data to the user.
 
     :param text: Text to show to the user, if a list is given, a random element will be choose
     :type text: list or str
+    :param cards: A dict or list of dict to show to the user with keys media, header, header_link, subhead and text
+    :type cards: dict or list
     :param additional_data: Additional data to add to the payload
     :type additional_data: dict
     :param terminate: Wether or not the dialog should be terminated
@@ -136,9 +138,14 @@ class Request():
 
     """
 
+    # Ensure we got a list here
+    if cards and type(cards) is not list:
+      cards = [cards]
+
     additional_data.update({
       CID_KEY: self.cid,
       'text': random_select(text),
+      'cards': cards,
     })
     
     self._client.publish(DIALOG_SHOW_TOPIC % self.sid, json.dumps(additional_data), loop_after=True)
