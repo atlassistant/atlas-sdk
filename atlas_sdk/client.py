@@ -50,6 +50,8 @@ class Client:
     self.log = logging.getLogger('atlas.client.%s' % (
       name or client_id or __class__.__name__))
 
+    self.client_id = client_id
+
     self._client = mqtt.Client(client_id)
     self._client.on_message = self.on_message
     self._client.on_connect = self.on_connect

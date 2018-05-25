@@ -90,8 +90,9 @@ class ChannelClient(Client):
         self.log.info('Recreating the channel, looks like the server has been restarted')
         self.create()
 
-  def stop(self):
-    self.destroy()
+  def stop(self, destroy=True):
+    if destroy:
+      self.destroy()
 
     super(ChannelClient, self).stop()
 
