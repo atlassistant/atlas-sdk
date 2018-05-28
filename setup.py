@@ -4,6 +4,9 @@ import os
 with open('README.md', encoding='utf8') as f:
   readme = f.read()
 
+with open('atlas_sdk/version.py') as f:
+  version = f.readline().strip()[15:-1]
+
 setup(
   name='atlas_sdk',
   description='Python SDK to interact with atlas',
@@ -12,7 +15,7 @@ setup(
   url='https://github.com/atlassistant/atlas-sdk',
   author='Julien LEICHER',
   license='GPL-3.0',
-  version='1.1.6',
+  version=version,
   packages=['atlas_sdk'],
   include_package_data=True,
   install_requires=[
