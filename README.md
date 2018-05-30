@@ -32,10 +32,12 @@ def handle_echo(request):
   
   """
 
-  date = request.slot('date') # Returns the value of the 'date' slot if set
+  # When calling request.slot, you retrieve a SlotData object which is a wrapper around a list of
+  # values (since atlas could returns many values for a single slot based on user input.
+  # It exposes some utility methods such as first() and last().
+  date = request.slot('date').first().value
 
-  # The "date" variable will hold a single string or an array of strings if multiple values are found for the same slot.
-  # This is very usefull if you want to handle cases where the user can enter many values such as "rooms" when turning lights on.
+  # The "date" variable now contains the value extracted by Atlas
 
   if not date:
     # Ask for user input. Once done, this handler would be called again
@@ -44,6 +46,8 @@ def handle_echo(request):
     return request.ask('date', _('You should provide a date?!'))
 
   # Show something in the channel from which this request has been started
+  # In request.env, you only have access to environment defined in the SkillClient,
+  # since atlas does not send you all user settings.
   request.show(_('Hello from echo! Env was %s') % request.env('A_USELESS_PARAMETER'), terminate=True)
 
 if __name__ == '__main__':
@@ -54,7 +58,8 @@ if __name__ == '__main__':
     description='Respond to echo intent',
     version='1.0.0',
     intents=[
-      # Handle "echo" intent. When the NLU returns this intent, the agent will call this skill and our handler
+      # Handle "echo" intent. When the NLU returns this intent, the agent will call this skill and our handler.
+      # The slot arg is only used by the atlas discovery service.
       Intent('echo', handle_echo, slots=[Slot('date')]),
     ],
     env=[

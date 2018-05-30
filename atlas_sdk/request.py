@@ -1,4 +1,5 @@
 from .client import DIALOG_ASK_TOPIC, DIALOG_SHOW_TOPIC, DIALOG_TERMINATE_TOPIC
+from .slot_data import SlotData
 import json, random
 
 CID_KEY = '__cid'
@@ -7,23 +8,6 @@ UID_KEY = '__uid'
 LANG_KEY = '__lang'
 VERSION_KEY = '__version'
 ENV_KEY = '__env'
-
-def try_convert(value, converter):
-  """Try to convert the given value.
-
-  Returns None if not possible.
-
-  :param value: Value to convert
-  :type value: any
-  :param converter: Converter to use to transform the parameter if set
-  :type converter: callable
-  :rtype: any
-  """
-
-  try:
-    return converter(value)
-  except:
-    return None
 
 def random_select(element):
   """If the given parameter is a list, a random item will be selected.
@@ -79,27 +63,18 @@ class Request():
 
     return self.data.get(ENV_KEY, {}).get(key)
 
-  def slot(self, name, default=None, converter=None):
-    """Handy method to retrieve a slot value for this request.
+  def slot(self, name):
+    """Handy method to retrieve a slot for this request.
+
+    A slot is always a list of dict with keys retrieved by the interpreter.
 
     :param name: Slot name to retrieve
     :type name: str
-    :param default: Default value if not found
-    :type default: any
-    :param converter: Converter to use to transform the parameter if set
-    :type converter: callable
+    :rtype: SlotData
     
     """
 
-    slot = self.data.get(name, default)
-
-    if converter and slot:
-      if type(slot) is list:
-        return [try_convert(v, converter) for v in slot]
-      else:
-        return try_convert(slot, converter)
-
-    return slot
+    return SlotData(self.data.get(name))
 
   def ask(self, slot, text, choices=None, additional_data={}):
     """Asks a question to the user to require its inputs.
