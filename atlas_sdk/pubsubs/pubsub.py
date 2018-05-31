@@ -1,4 +1,6 @@
 import logging
+from ..utils import create_instance_of
+from ..config import config
 
 class PubSub:
   """Publisher / Subscriber basic class.
@@ -28,7 +30,7 @@ class PubSub:
 
     return self._is_started
 
-  def publish(self, topic, payload):
+  def publish(self, topic, payload=None):
     """Publish a message to the given topic.
 
     Args:
@@ -89,3 +91,9 @@ class PubSub:
     """
 
     self._is_started = False
+
+  @classmethod
+  def from_config(cls):
+    return create_instance_of(
+      config.get('messaging.type') or 'atlas_sdk.pubsubs.mqtt_pubsub.MQTTPubSub', 
+      **(config.get('messaging', ['type']) or {}))

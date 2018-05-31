@@ -1,7 +1,40 @@
 import unittest
+from atlas_sdk.config import config
 from atlas_sdk.pubsubs import PubSub
+from atlas_sdk.pubsubs.mqtt_pubsub import MQTTPubSub
 
 class PubSubTests(unittest.TestCase):
+
+  def test_from_config(self):
+    pb = PubSub.from_config()
+
+    self.assertIsInstance(pb, PubSub)
+    self.assertIsInstance(pb, MQTTPubSub)
+
+    config.update({
+      'messaging': {
+        'type': 'atlas_sdk.pubsubs.mqtt_pubsub.MQTTPubSub',
+        'host': 'localhost',
+        'port': 5555
+      }
+    })
+
+    pb = PubSub.from_config()
+
+    self.assertIsInstance(pb, PubSub)
+    self.assertIsInstance(pb, MQTTPubSub)
+
+    self.assertEqual(5555, pb._port)
+
+    config.update({
+      'messaging': {
+        'type': 'atlas_sdk.pubsubs.PubSub',
+      }
+    })
+
+    pb = PubSub.from_config()
+    self.assertIsInstance(pb, PubSub)
+    self.assertNotIsInstance(pb, MQTTPubSub)
 
   def test_init(self):
     pb = PubSub()

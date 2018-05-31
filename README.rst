@@ -1,7 +1,7 @@
 atlas-sdk
 =========
 
-Python SDK to interact with `atlas <https://github.com/atlassistant/atlas>`_
+Python SDK to interact with `atlas <https://github.com/atlassistant/atlas>`_.
 
 Installation
 ------------

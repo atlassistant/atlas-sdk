@@ -41,3 +41,17 @@ database:
     self.assertEqual('localhost', c.get('broker.host'))
     self.assertEqual(1883, c.get('broker.port'))
     self.assertIsNone(c.get('broker.something'))
+
+  def test_get_with_remove_keys(self):
+    data = {
+      'broker': {
+        'host': 'localhost',
+        'port': 1883,
+      },
+    }
+    c = Config(data)
+
+    result = c.get('broker', ['port'])
+
+    self.assertEqual({ 'host': 'localhost' }, result)
+    self.assertEqual(data, dict(c)) # Check if has not been modified
