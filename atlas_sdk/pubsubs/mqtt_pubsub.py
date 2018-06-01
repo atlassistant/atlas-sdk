@@ -59,7 +59,7 @@ class MQTTPubSub(PubSub):
     self._logger.debug('Publishing to %s with payload %s' % (topic, payload))
 
     if topic in lifecycle_topics:
-      self.on_received(topic)
+      self.on_received(topic, payload)
     else:
       self._client.publish(topic, payload, qos=1)
 
@@ -79,8 +79,11 @@ class MQTTPubSub(PubSub):
     self._started_count += 1
 
     if self._started_count > 1:
-      # If it has been already connected, do nothing more
-      return
+      # If it has been already connected, just publish the on connected callback
+      
+      # TODO it may be tricky when sharing the pubsub on multiple adapters, wait & see but for the
+      # on connected topic, action are not destructive so that's not a big deal I guess
+      return self.publish(ON_CONNECTED_TOPIC)
       
     if self._user:
         self._client.username_pw_set(self._user, self._password)
@@ -104,6 +107,8 @@ class MQTTPubSub(PubSub):
     if self._started_count > 1:
       # More than one client still using it, just decrement the count
       self._started_count -= 1
+
+      # TODO maybe we should send the on disconnected topic here, but it's so tricky on multiple adapters...
     else:
       self._client.loop_stop()
       self._client.disconnect()

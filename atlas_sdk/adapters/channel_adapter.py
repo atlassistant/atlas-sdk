@@ -76,10 +76,10 @@ class ChannelAdapter(PubSubAdapter):
 
   def activate(self):
     self._pubsub.subscribe(ON_CONNECTED_TOPIC,                          empty(self.create))
-    self._pubsub.subscribe(CHANNEL_ASK_TOPIC % self._channel_id,        json(self.on_ask))
-    self._pubsub.subscribe(CHANNEL_ANSWER_TOPIC % self._channel_id,     json(self.on_answer))
     self._pubsub.subscribe(DISCOVERY_PING_TOPIC,                        json(self.on_discovery_ping))
 
+    self._pubsub.subscribe(CHANNEL_ASK_TOPIC % self._channel_id,        json(self.on_ask))
+    self._pubsub.subscribe(CHANNEL_ANSWER_TOPIC % self._channel_id,     json(self.on_answer))
     self._pubsub.subscribe(CHANNEL_END_TOPIC % self._channel_id,        empty(self.on_end))
     self._pubsub.subscribe(CHANNEL_WORK_TOPIC % self._channel_id,       empty(self.on_work))
     self._pubsub.subscribe(CHANNEL_DESTROYED_TOPIC % self._channel_id,  empty(self.on_destroyed))
@@ -94,6 +94,9 @@ class ChannelAdapter(PubSubAdapter):
       destroy (bool): Wether or not a destroy request should be send to atlas
 
     """
+
+    # TODO I need to unsubscribe only the registered handler
+    # so add an optional parameter to pubsub.unsubscribe which is the handler to remove!
 
     self._pubsub.unsubscribe(CHANNEL_ASK_TOPIC % self._channel_id)
     self._pubsub.unsubscribe(CHANNEL_ANSWER_TOPIC % self._channel_id)
