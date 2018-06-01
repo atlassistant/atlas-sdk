@@ -1,5 +1,6 @@
 import sys
 from .pubsub import PubSub
+from .constants import lifecycle_topics, ON_CONNECTED_TOPIC, ON_DISCONNECTED_TOPIC
 from paho.mqtt.client import Client
 
 class MQTTPubSub(PubSub):
@@ -40,11 +41,16 @@ class MQTTPubSub(PubSub):
 
     # Subscribe to each topic registered
     for topic in self._handlers.keys():
-      self._client.subscribe(topic)
+      if topic not in lifecycle_topics:
+        self._client.subscribe(topic)
+
+    self.publish(ON_CONNECTED_TOPIC)
 
   def _on_disconnect(self, client, userdata, rc):
     self._is_started = False
     self._logger.info('❌ Disconnected')
+
+    self.publish(ON_DISCONNECTED_TOPIC)
 
   def _on_message(self, client, userdata, msg):
     self.on_received(msg.topic, msg.payload)
@@ -52,13 +58,16 @@ class MQTTPubSub(PubSub):
   def publish(self, topic, payload=None):
     self._logger.debug('Publishing to %s with payload %s' % (topic, payload))
 
-    self._client.publish(topic, payload, qos=1)
+    if topic in lifecycle_topics:
+      self.on_received(topic)
+    else:
+      self._client.publish(topic, payload, qos=1)
 
   def subscribe(self, topic, handler):
     super(MQTTPubSub, self).subscribe(topic, handler)
 
     # If already started, just subscribe immediately
-    if self.is_started():
+    if self.is_started() and topic not in lifecycle_topics:
       self._client.subscribe(topic)
 
   def unsubscribe(self, topic):

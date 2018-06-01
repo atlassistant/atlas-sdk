@@ -7,7 +7,10 @@ logging.basicConfig(level=logging.INFO)
 
 pb = MQTTPubSub()
 
-channel = Channel('example_channel_id', adapter=ChannelAdapter(pb))
+def asked(data):
+  print ('Asked! %s' % data)
+
+channel = Channel('example_channel_id', on_ask=asked, adapter=ChannelAdapter(pb))
 other = Channel('another_channel_id', adapter=ChannelAdapter(pb))
 
 channel.run()

@@ -1,6 +1,7 @@
 from json import dumps
 from datetime import datetime
 from .pubsub_adapter import PubSubAdapter
+from ..pubsubs.constants import ON_CONNECTED_TOPIC
 from ..pubsubs.handlers import json, empty, notset
 from ..topics import CHANNEL_ANSWER_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_CREATE_TOPIC, \
   CHANNEL_CREATED_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_DESTROYED_TOPIC, CHANNEL_END_TOPIC, \
@@ -74,6 +75,7 @@ class ChannelAdapter(PubSubAdapter):
     self._pubsub.publish(DIALOG_PARSE_TOPIC % self._channel_id, msg)
 
   def activate(self):
+    self._pubsub.subscribe(ON_CONNECTED_TOPIC,                          empty(self.create))
     self._pubsub.subscribe(CHANNEL_ASK_TOPIC % self._channel_id,        json(self.on_ask))
     self._pubsub.subscribe(CHANNEL_ANSWER_TOPIC % self._channel_id,     json(self.on_answer))
     self._pubsub.subscribe(DISCOVERY_PING_TOPIC,                        json(self.on_discovery_ping))

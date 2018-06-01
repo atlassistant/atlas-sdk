@@ -5,16 +5,27 @@ from ..topics import INTENT_TOPIC, DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC
 
 class SkillAdapter(PubSubAdapter):
   
-  def __init__(self, pubsub, skill_data):
+  def __init__(self, pubsub):
     """Constructs a new skill adapter.
+
+    You must call `attach` with the skill data to make discovery answer work as expected.
 
     Args:
       pubsub (PubSub): PubSub implementation to use
-      skill_data (dict): Dictionary representing the skill, used for discovery purposes
 
     """
 
     super(SkillAdapter, self).__init__(pubsub)
+
+    self._skill_data = None
+
+  def attach(self, skill_data):
+    """Attach skill data to this adapter. Used by the pong method.
+
+    Args:
+      skill_data (dict): Dictionary representing the skill, used for discovery purposes
+
+    """
 
     self._skill_data = skill_data
 
