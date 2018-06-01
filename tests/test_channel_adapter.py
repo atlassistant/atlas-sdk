@@ -1,14 +1,27 @@
 import unittest
 from unittest.mock import MagicMock
 from atlas_sdk.pubsubs import PubSub
-from atlas_sdk.facades import ChannelFacade
+from atlas_sdk.adapters import ChannelAdapter
 from atlas_sdk import topics
 
-class ChannelFacadeTests(unittest.TestCase):
+class ChannelAdapterTests(unittest.TestCase):
+
+  def test_init(self):
+    pb = PubSub()
+    channel = ChannelAdapter(pb)
+
+    self.assertIsNone(channel._channel_id)
+    self.assertIsNone(channel._user_id)
+
+    channel.attach('channel', '1337')
+
+    self.assertEqual('channel', channel._channel_id)
+    self.assertEqual('1337', channel._user_id)
 
   def test_subscriptions(self):
     pb = PubSub()
-    channel = ChannelFacade(pb, 'channel', 1337)
+    channel = ChannelAdapter(pb)
+    channel.attach('channel', '1337')
     
     channel.on_answer = MagicMock()
     channel.on_ask = MagicMock()
@@ -16,6 +29,7 @@ class ChannelFacadeTests(unittest.TestCase):
     channel.on_destroyed = MagicMock()
     channel.on_end = MagicMock()
     channel.on_work = MagicMock()
+    channel.on_discovery_ping = MagicMock()
 
     channel.activate()
     
@@ -27,6 +41,8 @@ class ChannelFacadeTests(unittest.TestCase):
 
     pb.on_received(topics.CHANNEL_CREATED_TOPIC % 'channel', '{ "channel": "created" }')
     pb.on_received(topics.CHANNEL_CREATED_TOPIC % 'another_channel', '{ "channel": "created" }')
+
+    pb.on_received(topics.DISCOVERY_PING_TOPIC, "{}")
 
     pb.on_received(topics.CHANNEL_DESTROYED_TOPIC % 'channel')
     pb.on_received(topics.CHANNEL_DESTROYED_TOPIC % 'another_channel')
@@ -41,17 +57,19 @@ class ChannelFacadeTests(unittest.TestCase):
     channel.on_ask.assert_called_once_with({ 'channel': 'ask' })
     channel.on_created.assert_called_once_with({ 'channel': 'created' })
     channel.on_destroyed.assert_called_once()
+    channel.on_discovery_ping.assert_called_once_with({})
     channel.on_end.assert_called_once()
     channel.on_work.assert_called_once()
     
   def test_publications(self):
     pb = PubSub()
-    channel = ChannelFacade(pb, 'channel', 1337)
+    channel = ChannelAdapter(pb)
+    channel.attach('channel', '1337')
 
     pb.publish = MagicMock()
 
     channel.create()
-    pb.publish.assert_called_once_with(topics.CHANNEL_CREATE_TOPIC % 'channel', '{"uid": 1337}')
+    pb.publish.assert_called_once_with(topics.CHANNEL_CREATE_TOPIC % 'channel', '{"uid": "1337"}')
     pb.publish.reset_mock()
 
     channel.destroy()

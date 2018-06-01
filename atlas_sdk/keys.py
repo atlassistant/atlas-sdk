@@ -5,3 +5,4 @@ the messages sent between atlas components) to avoid magic strings.
 SESSION_ID_KEY = 'sid'
 USER_ID_KEY = 'uid'
 STARTED_AT_KEY = 'started_at'
+LANG_KEY = 'lang'
