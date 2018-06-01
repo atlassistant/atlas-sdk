@@ -7,11 +7,12 @@ class Config(dict):
 
   """
   
-  def get(self, path, keys_to_remove=[]):
+  def get(self, path, default=None, keys_to_remove=[]):
     """Retrieve configuration value for the given path.
 
     Args:
         path (str): Path with period for nested value
+        default (obj): Default value if not found
         keys_to_remove (list): List of keys to remove if the return value is a dictionary
     Returns:
         obj: Value configurated or None if not found
@@ -24,7 +25,7 @@ class Config(dict):
       cur_search_object = cur_search_object.get(item)
 
       if cur_search_object is None:
-        return None
+        return default
 
     if keys_to_remove and isinstance(cur_search_object, dict):
       cur_search_object = dict(cur_search_object) # Make a swallow copy

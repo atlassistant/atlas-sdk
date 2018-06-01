@@ -1,11 +1,11 @@
 from json import dumps
 from datetime import datetime
 from .pubsub_facade import PubSubFacade
-from ..pubsubs.handlers import json, empty
-from .topics import CHANNEL_ANSWER_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_CREATE_TOPIC, \
+from ..pubsubs.handlers import json, empty, notset
+from ..topics import CHANNEL_ANSWER_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_CREATE_TOPIC, \
   CHANNEL_CREATED_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_DESTROYED_TOPIC, CHANNEL_END_TOPIC, \
   CHANNEL_WORK_TOPIC, DIALOG_PARSE_TOPIC, DISCOVERY_PING_TOPIC
-from .keys import USER_ID_KEY, STARTED_AT_KEY
+from ..keys import USER_ID_KEY, STARTED_AT_KEY
 from dateutil.parser import parse as dateParse
 
 class ChannelFacade(PubSubFacade):
@@ -28,12 +28,12 @@ class ChannelFacade(PubSubFacade):
 
     # This is what should be exposed
 
-    self.on_ask = self.handler_not_set
-    self.on_answer = self.handler_not_set
-    self.on_end = self.handler_not_set
-    self.on_work = self.handler_not_set
-    self.on_destroyed = self.handler_not_set
-    self.on_created = self.handler_not_set
+    self.on_ask = notset(self._logger)
+    self.on_answer = notset(self._logger)
+    self.on_end = notset(self._logger)
+    self.on_work = notset(self._logger)
+    self.on_destroyed = notset(self._logger)
+    self.on_created = notset(self._logger)
 
   def _check_still_connected(self, data):
     """Upon discovery ping, checks if the channel is still connected to prevent
@@ -99,6 +99,15 @@ class ChannelFacade(PubSubFacade):
       destroy (bool): Wether or not a destroy request should be send to atlas
 
     """
+
+    self._pubsub.unsubscribe(CHANNEL_ASK_TOPIC % self._channel_id)
+    self._pubsub.unsubscribe(CHANNEL_ANSWER_TOPIC % self._channel_id)
+    self._pubsub.unsubscribe(DISCOVERY_PING_TOPIC)
+
+    self._pubsub.unsubscribe(CHANNEL_END_TOPIC % self._channel_id)
+    self._pubsub.unsubscribe(CHANNEL_WORK_TOPIC % self._channel_id)
+    self._pubsub.unsubscribe(CHANNEL_DESTROYED_TOPIC % self._channel_id)
+    self._pubsub.unsubscribe(CHANNEL_CREATED_TOPIC % self._channel_id)
 
     if destroy:
       self.destroy()

@@ -1,54 +1,46 @@
-import unittest
-from atlas_sdk.pubsubs.handlers import json, data, empty
+import unittest, types, logging
+from unittest.mock import MagicMock
+from atlas_sdk.pubsubs.handlers import json, data, empty, notset
 
 class HandlersTests(unittest.TestCase):
 
   def test_json(self):
-    handler_called = False
-    
-    def my_handler(data):
-      nonlocal handler_called
+    obj = types.SimpleNamespace()
+    obj.handler = MagicMock()
 
-      handler_called = True
-
-      self.assertIsInstance(data, dict)
-      self.assertEqual('Paris', data['location'])
-
-    handler = json(my_handler)
+    handler = json(obj.handler)
     handler('event1', '''
 {
   "location": "Paris"
 }
 ''')
 
-    self.assertTrue(handler_called)
+    obj.handler.assert_called_once_with({'location': 'Paris'})
 
   def test_empty(self):
-    handler_called = False
+    obj = types.SimpleNamespace()
+    obj.handler = MagicMock()
 
-    def my_handler():
-      nonlocal handler_called
-      handler_called = True
-
-    handler = empty(my_handler)
+    handler = empty(obj.handler)
     handler('event1', 'raw value')
 
-    self.assertTrue(handler_called)
+    obj.handler.assert_called_once_with()
 
   def test_data(self):
-    handler_called = False
-    
-    def my_handler(data):
-      nonlocal handler_called
+    obj = types.SimpleNamespace()
+    obj.handler = MagicMock()
 
-      handler_called = True
-      
-      self.assertIsInstance(data, str)
-      self.assertEqual('raw value', data)
-
-    handler = data(my_handler)
+    handler = data(obj.handler)
     handler('event1', 'raw value')
 
-    self.assertTrue(handler_called)
+    obj.handler.assert_called_once_with('raw value')
+
+  def test_notset(self):
+    obj = types.SimpleNamespace()
+    obj.handler = MagicMock()
+
+    handler = notset(logging)
+    handler('event1', 'a value')
+    
 
     

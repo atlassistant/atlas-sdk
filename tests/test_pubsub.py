@@ -1,4 +1,5 @@
-import unittest
+import unittest, types
+from unittest.mock import MagicMock
 from atlas_sdk.config import config
 from atlas_sdk.pubsubs import PubSub
 from atlas_sdk.pubsubs.mqtt_pubsub import MQTTPubSub
@@ -66,39 +67,44 @@ class PubSubTests(unittest.TestCase):
     self.assertEqual(1, len(pb._handlers['event2']))
     self.assertEqual(handler, pb._handlers['event1'][0])
 
-  def test_on_received(self):
+  def test_unsubscribe(self):
+    obj = types.SimpleNamespace()
+    obj.event1_handler = MagicMock()
+    obj.event2_handler = MagicMock()
+
     pb = PubSub()
 
-    event1_count = 0
-    event2_count = 0
+    pb.subscribe('event1', obj.event1_handler)
+    pb.subscribe('event2', obj.event2_handler)
 
-    def event1_handler(topic, data):
-      nonlocal event1_count
-      event1_count+=1
+    self.assertEqual(2, len(pb._handlers))
 
-      self.assertEqual('event1', topic)
-      self.assertEqual('data1', data)
+    pb.unsubscribe('event1')
 
-    def event1_handler2(topic, data):
-      nonlocal event1_count
-      event1_count+=1
-
-      self.assertEqual('event1', topic)
-      self.assertEqual('data1', data)
-
-    def event2_handler(topic, data):
-      nonlocal event2_count
-      event2_count+=1
-
-      self.assertEqual('event2', topic)
-      self.assertEqual('data2', data)
-
-    pb.subscribe('event1', event1_handler)
-    pb.subscribe('event1', event1_handler2)
-    pb.subscribe('event2', event2_handler)
+    self.assertEqual(1, len(pb._handlers))
+    self.assertFalse('event1' in pb._handlers)
 
     pb.on_received('event1', 'data1')
     pb.on_received('event2', 'data2')
 
-    self.assertEqual(2, event1_count)
-    self.assertEqual(1, event2_count)
+    obj.event1_handler.assert_not_called()
+    obj.event2_handler.assert_called_once_with('event2', 'data2')
+
+  def test_on_received(self):
+    obj = types.SimpleNamespace()
+    obj.event1_handler = MagicMock()
+    obj.event1_handler2 = MagicMock()
+    obj.event2_handler = MagicMock()
+
+    pb = PubSub()
+
+    pb.subscribe('event1', obj.event1_handler)
+    pb.subscribe('event1', obj.event1_handler2)
+    pb.subscribe('event2', obj.event2_handler)
+
+    pb.on_received('event1', 'data1')
+    pb.on_received('event2', 'data2')
+
+    obj.event1_handler.assert_called_once_with('event1', 'data1')
+    obj.event1_handler2.assert_called_once_with('event1', 'data1')
+    obj.event2_handler.assert_called_once_with('event2', 'data2')

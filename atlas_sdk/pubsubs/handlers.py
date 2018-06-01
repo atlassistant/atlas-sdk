@@ -1,5 +1,17 @@
 from json import loads
 
+def notset(logger):
+  """Returns a lambda which logs call without doing anything else.
+
+  Args:
+    logger: (Logger): Logger to use
+  Returns:
+    callable: Lambda which takes topic and data
+
+  """
+
+  return lambda *args: logger.warning('Handler not set: %s' % ', '.join(args))
+
 def json(handler):
   """Returns a lambda which will take a topic and raw data and call the handler
   with json deserialized data.

@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 from atlas_sdk.pubsubs import PubSub
-from atlas_sdk.facades import ChannelFacade, topics
+from atlas_sdk.facades import ChannelFacade
+from atlas_sdk import topics
 
 class ChannelFacadeTests(unittest.TestCase):
 

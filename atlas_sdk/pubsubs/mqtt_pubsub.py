@@ -49,6 +49,11 @@ class MQTTPubSub(PubSub):
   def publish(self, topic, payload=None):
     self._client.publish(topic, payload)
 
+  def unsubscribe(self, topic):
+    super(MQTTPubSub, self).unsubscribe(topic)
+    
+    self._client.unsubscribe(topic)
+
   def start(self):
     if self._user:
         self._client.username_pw_set(self._user, self._password)

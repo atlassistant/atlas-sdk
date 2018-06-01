@@ -30,12 +30,6 @@ class PubSubFacade(Facade):
 
     self._pubsub = pubsub
 
-  def handler_not_set(self, topic=None, data=None):
-    """"Catch all" handler when not overriding when using a facade subclass.
-    """
-
-    self._logger.warning('No handler set')
-
   def activate(self):
     super(PubSubFacade, self).activate()
 

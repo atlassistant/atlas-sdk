@@ -80,6 +80,16 @@ class PubSub:
     else:
       handlers.append(handler)
 
+  def unsubscribe(self, topic):
+    """Unsubscribes all handlers from the given topic.
+
+    Args:
+      topic (str): Topic to unsubscribe
+
+    """
+
+    del self._handlers[topic]
+
   def start(self):
     """Marks this PubSub interface has started.
     """
@@ -95,5 +105,5 @@ class PubSub:
   @classmethod
   def from_config(cls):
     return create_instance_of(
-      config.get('messaging.type') or 'atlas_sdk.pubsubs.mqtt_pubsub.MQTTPubSub', 
-      **(config.get('messaging', ['type']) or {}))
+      config.get('messaging.type', 'atlas_sdk.pubsubs.mqtt_pubsub.MQTTPubSub'), 
+      **config.get('messaging', {}, ['type']))
