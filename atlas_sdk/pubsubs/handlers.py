@@ -10,7 +10,7 @@ def notset(logger):
 
   """
 
-  return lambda *args: logger.warning('Handler not set: %s' % str(args))
+  return lambda *args: logger.debug('Handler not set: %s' % str(args))
 
 def json(handler):
   """Returns a lambda which will take a topic and raw data and call the handler

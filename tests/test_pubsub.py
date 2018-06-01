@@ -80,6 +80,7 @@ class PubSubTests(unittest.TestCase):
     self.assertEqual(2, len(pb._handlers))
 
     pb.unsubscribe('event1')
+    pb.unsubscribe('aneventthatdoesnotexist') # Should log a warning
 
     self.assertEqual(1, len(pb._handlers))
     self.assertFalse('event1' in pb._handlers)

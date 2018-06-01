@@ -42,6 +42,4 @@ class HandlersTests(unittest.TestCase):
     handler = notset(logging)
     handler('event1', 'a value')
     handler('event1', "{}")
-    
-
-    
+        

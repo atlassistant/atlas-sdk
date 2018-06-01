@@ -1,3 +1,4 @@
+import sys
 from .pubsub import PubSub
 from paho.mqtt.client import Client
 
@@ -19,6 +20,8 @@ class MQTTPubSub(PubSub):
     """
     
     super(MQTTPubSub, self).__init__()
+
+    self._started_count = 0
 
     self._client = Client(client_id)
     self._client.on_connect = self._on_connect
@@ -47,7 +50,16 @@ class MQTTPubSub(PubSub):
     self.on_received(msg.topic, msg.payload)
 
   def publish(self, topic, payload=None):
-    self._client.publish(topic, payload)
+    self._logger.debug('Publishing to %s with payload %s' % (topic, payload))
+
+    self._client.publish(topic, payload, qos=1)
+
+  def subscribe(self, topic, handler):
+    super(MQTTPubSub, self).subscribe(topic, handler)
+
+    # If already started, just subscribe immediately
+    if self.is_started():
+      self._client.subscribe(topic)
 
   def unsubscribe(self, topic):
     super(MQTTPubSub, self).unsubscribe(topic)
@@ -55,6 +67,12 @@ class MQTTPubSub(PubSub):
     self._client.unsubscribe(topic)
 
   def start(self):
+    self._started_count += 1
+
+    if self._started_count > 1:
+      # If it has been already connected, do nothing more
+      return
+      
     if self._user:
         self._client.username_pw_set(self._user, self._password)
 
@@ -69,8 +87,14 @@ class MQTTPubSub(PubSub):
         except KeyboardInterrupt:
           pass
     except ConnectionRefusedError as e:
+      self._started_count -= 1
       self._logger.critical('Could not connect to the broker at %s:%s, is it running?' % (self._host, self._port))
+      sys.exit(-1)
 
   def stop(self):
-    self._client.disconnect()
-    self._client.loop_stop()
+    if self._started_count > 1:
+      # More than one client still using it, just decrement the count
+      self._started_count -= 1
+    else:
+      self._client.loop_stop()
+      self._client.disconnect()

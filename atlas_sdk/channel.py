@@ -18,7 +18,7 @@ class Channel:
     `on_discovery_ping` handler.
   """
 
-  def __init__(self, id, user_id, adapter=None, 
+  def __init__(self, id, user_id=None, adapter=None, 
     on_created=None, on_destroyed=None, on_answer=None, on_ask=None, on_end=None, on_work=None):
     """Creates a new channel.
 

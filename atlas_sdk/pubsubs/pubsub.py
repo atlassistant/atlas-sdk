@@ -88,7 +88,12 @@ class PubSub:
 
     """
 
-    del self._handlers[topic]
+    self._logger.debug('Unsubscribing from %s' % topic)
+
+    if topic in self._handlers:
+      del self._handlers[topic]
+    else:
+      self._logger.warning('Trying to unsubscribe from a non-existent topic %s' % topic)
 
   def start(self):
     """Marks this PubSub interface has started.
