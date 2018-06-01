@@ -5,7 +5,7 @@ from ..pubsubs.handlers import json, empty, notset
 from ..topics import CHANNEL_ANSWER_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_CREATE_TOPIC, \
   CHANNEL_CREATED_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_DESTROYED_TOPIC, CHANNEL_END_TOPIC, \
   CHANNEL_WORK_TOPIC, DIALOG_PARSE_TOPIC, DISCOVERY_PING_TOPIC
-from ..keys import USER_ID_KEY
+from ..constants import USER_ID_KEY
 
 class ChannelAdapter(PubSubAdapter):
 

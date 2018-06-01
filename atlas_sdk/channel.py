@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil.parser import parse as dateParse
 from .adapters import ChannelAdapter
 from .pubsubs import PubSub
-from .keys import STARTED_AT_KEY, LANG_KEY
+from .constants import STARTED_AT_KEY, LANG_KEY
 
 class Channel:
   """A channel is single source of communication with the server.
@@ -11,19 +11,27 @@ class Channel:
     It is created for a particular user. It can be anything you want, a terminal,
     a voice input, a web app.
 
-    Just subclass this class and use the underlying ChannelAdapter to register your handlers.
+    You can pass your own handlers by using the constructor or subclass it and make your
+    own channel.
 
     This class already handle channel recreate if the server has been restarted by attaching to the
     `on_discovery_ping` handler.
   """
 
-  def __init__(self, id, user_id, adapter=None):
+  def __init__(self, id, user_id, adapter=None, 
+    on_created=None, on_destroyed=None, on_answer=None, on_ask=None, on_end=None, on_work=None):
     """Creates a new channel.
 
     Args:
       id (str): ID of the channel, it should be unique per channel and per user
       user_id (str): User identifier
       adapter (ChannelAdapter): Adapter to use, if no one is given, a default one will be created
+      on_created (callable): Called when the channel has been created by the server
+      on_destroyed (callable): Called when the channel has been destroyed by the server
+      on_answer (callable): Called when the skill wants to answer to the user
+      on_ask (callable): Called when the skill asks for user input
+      on_end (callable): Called when a session has ended
+      on_work (callable): Called when a skill is working
 
     """
 
@@ -36,6 +44,14 @@ class Channel:
     self._adapter.on_discovery_ping = self.check_still_connected
     self._adapter.on_created = self.on_created
 
+    self._adapter.on_answer =     on_answer or self._adapter.on_answer
+    self._adapter.on_ask =        on_ask or self._adapter.on_ask
+    self._adapter.on_destroyed =  on_destroyed or self._adapter.on_destroyed
+    self._adapter.on_end =        on_end or self._adapter.on_end
+    self._adapter.on_work =       on_work or self._adapter.on_work
+
+    self._on_created = on_created
+
   def lang(self):
     """Gets the channel language.
 
@@ -45,6 +61,16 @@ class Channel:
     """
 
     return self._lang
+
+  def parse(self, msg):
+    """Parses a message.
+
+    Args:
+      msg (str): Message to parse.
+
+    """
+
+    self._adapter.parse(msg)
 
   def on_created(self, data):
     """Called when the channel has been created and an agent is ready.
@@ -58,6 +84,9 @@ class Channel:
     self._lang = data.get(LANG_KEY)
     
     self._logger.debug('Channel created at %s for lang %s' % (self._created_at, self._lang))
+
+    if self._on_created:
+      self._on_created(data)
 
   def check_still_connected(self, data):
     """Upon discovery ping, checks if the channel is still connected to prevent

@@ -1,10 +1,11 @@
-import unittest
+import unittest, types
+from unittest.mock import MagicMock
 from datetime import timedelta
 from unittest.mock import MagicMock
 from atlas_sdk.channel import Channel
 from atlas_sdk.adapters import ChannelAdapter
 from atlas_sdk.pubsubs import PubSub
-from atlas_sdk.keys import STARTED_AT_KEY
+from atlas_sdk.constants import STARTED_AT_KEY
 
 class ChannelTests(unittest.TestCase):
 
@@ -31,9 +32,7 @@ class ChannelTests(unittest.TestCase):
 
     self.assertIsNone(channel._created_at)
 
-    channel.on_created({
-      'lang': 'fr'
-    })
+    channel.on_created({ 'lang': 'fr' })
 
     self.assertIsNotNone(channel._created_at)
 
@@ -56,3 +55,37 @@ class ChannelTests(unittest.TestCase):
     })
 
     adapter.create.assert_called_once()
+
+  def test_custom_handlers(self):
+    obj = types.SimpleNamespace()
+    obj.on_created = MagicMock()
+    obj.on_destroyed = MagicMock()
+    obj.on_ask = MagicMock()
+    obj.on_answer = MagicMock()
+    obj.on_end = MagicMock()
+    obj.on_work = MagicMock()
+
+    pb = PubSub()
+    adapter = ChannelAdapter(pb)
+    
+    channel = Channel('sid', 'uid', adapter, 
+      on_created=obj.on_created,
+      on_destroyed=obj.on_destroyed,
+      on_answer=obj.on_answer,
+      on_ask=obj.on_ask,
+      on_end=obj.on_end,
+      on_work=obj.on_work)
+
+    adapter.on_created({ 'lang': 'fr' })
+    adapter.on_destroyed()
+    adapter.on_end()
+    adapter.on_work()
+    adapter.on_answer({})
+    adapter.on_ask({})
+
+    obj.on_created.assert_called_once_with({'lang': 'fr'})
+    obj.on_destroyed.assert_called_once()
+    obj.on_end.assert_called_once()
+    obj.on_work.assert_called_once()
+    obj.on_answer.assert_called_once_with({})
+    obj.on_ask.assert_called_once_with({})
