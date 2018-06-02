@@ -28,7 +28,7 @@ class Config(dict):
         return default
 
     if keys_to_remove and isinstance(cur_search_object, dict):
-      cur_search_object = dict(cur_search_object) # Make a swallow copy
+      cur_search_object = dict(cur_search_object) # Make a shallow copy
 
       for key in keys_to_remove:
         del cur_search_object[key]
