@@ -70,10 +70,12 @@ class MQTTPubSub(PubSub):
     if self.is_started() and topic not in lifecycle_topics:
       self._client.subscribe(topic)
 
-  def unsubscribe(self, topic):
+  def unsubscribe(self, topic, handler=None):
     super(MQTTPubSub, self).unsubscribe(topic)
     
-    self._client.unsubscribe(topic)
+    # If there is no handlers for this topic, unsubscribe
+    if topic not in self._handlers:
+      self._client.unsubscribe(topic)
 
   def start(self):
     self._started_count += 1
@@ -98,7 +100,7 @@ class MQTTPubSub(PubSub):
           self._client.loop_forever()
         except KeyboardInterrupt:
           pass
-    except ConnectionRefusedError as e:
+    except ConnectionRefusedError:
       self._started_count -= 1
       self._logger.critical('Could not connect to the broker at %s:%s, is it running?' % (self._host, self._port))
       sys.exit(-1)

@@ -91,6 +91,43 @@ class PubSubTests(unittest.TestCase):
     obj.event1_handler.assert_not_called()
     obj.event2_handler.assert_called_once_with('event2', 'data2')
 
+  def test_unsubscribe_specific_handler(self):
+    obj = types.SimpleNamespace()
+    obj.handler1 = MagicMock()
+    obj.handler2 = MagicMock()
+    obj.handler3 = MagicMock()
+
+    pb = PubSub()
+
+    pb.subscribe('event1', obj.handler1)
+    pb.subscribe('event1', obj.handler2)
+    pb.subscribe('event1', obj.handler3)
+
+    pb.on_received('event1')
+
+    obj.handler1.assert_called_once()
+    obj.handler2.assert_called_once()
+    obj.handler3.assert_called_once()
+
+    pb.unsubscribe('event1', obj.handler2)
+
+    obj.handler1.reset_mock()
+    obj.handler2.reset_mock()
+    obj.handler3.reset_mock()
+
+    pb.on_received('event1')
+
+    obj.handler1.assert_called_once()
+    obj.handler2.assert_not_called()
+    obj.handler3.assert_called_once()
+
+    self.assertEqual(1, len(pb._handlers))
+
+    pb.unsubscribe('event1', obj.handler1)
+    pb.unsubscribe('event1', obj.handler3)
+
+    self.assertEqual(0, len(pb._handlers))
+
   def test_on_received(self):
     obj = types.SimpleNamespace()
     obj.event1_handler = MagicMock()

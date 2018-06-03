@@ -35,6 +35,9 @@ class ChannelAdapter(PubSubAdapter):
     self.on_created = notset(self._logger)
     self.on_discovery_ping = notset(self._logger)
 
+    self._on_discovery_handler = None
+    self._on_create_handler = None
+
   def attach(self, channel_id, user_id):
     """Attach this adapter to the given ids, it should be called before the activate!
     
@@ -75,8 +78,11 @@ class ChannelAdapter(PubSubAdapter):
     self._pubsub.publish(DIALOG_PARSE_TOPIC % self._channel_id, msg)
 
   def activate(self):
-    self._pubsub.subscribe(ON_CONNECTED_TOPIC,                          empty(self.create))
-    self._pubsub.subscribe(DISCOVERY_PING_TOPIC,                        json(self.on_discovery_ping))
+    self._on_create_handler = empty(self.create)
+    self._on_discovery_handler = json(self.on_discovery_ping)
+
+    self._pubsub.subscribe(ON_CONNECTED_TOPIC,                          self._on_create_handler)
+    self._pubsub.subscribe(DISCOVERY_PING_TOPIC,                        self._on_discovery_handler)
 
     self._pubsub.subscribe(CHANNEL_ASK_TOPIC % self._channel_id,        json(self.on_ask))
     self._pubsub.subscribe(CHANNEL_ANSWER_TOPIC % self._channel_id,     json(self.on_answer))
@@ -95,13 +101,11 @@ class ChannelAdapter(PubSubAdapter):
 
     """
 
-    # TODO I need to unsubscribe only the registered handler
-    # so add an optional parameter to pubsub.unsubscribe which is the handler to remove!
+    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC, self._on_create_handler)
+    self._pubsub.unsubscribe(DISCOVERY_PING_TOPIC, self._on_discovery_handler)
 
     self._pubsub.unsubscribe(CHANNEL_ASK_TOPIC % self._channel_id)
     self._pubsub.unsubscribe(CHANNEL_ANSWER_TOPIC % self._channel_id)
-    self._pubsub.unsubscribe(DISCOVERY_PING_TOPIC)
-
     self._pubsub.unsubscribe(CHANNEL_END_TOPIC % self._channel_id)
     self._pubsub.unsubscribe(CHANNEL_WORK_TOPIC % self._channel_id)
     self._pubsub.unsubscribe(CHANNEL_DESTROYED_TOPIC % self._channel_id)

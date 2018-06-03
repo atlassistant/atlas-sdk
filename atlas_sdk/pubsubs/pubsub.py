@@ -80,18 +80,25 @@ class PubSub:
     else:
       handlers.append(handler)
 
-  def unsubscribe(self, topic):
+  def unsubscribe(self, topic, handler=None):
     """Unsubscribes all handlers from the given topic.
 
     Args:
       topic (str): Topic to unsubscribe
+      handler (callable): Specific handler to remove
 
     """
 
     self._logger.debug('Unsubscribing from %s' % topic)
 
     if topic in self._handlers:
-      del self._handlers[topic]
+      if handler:
+        self._handlers[topic].remove(handler)
+
+        if len(self._handlers[topic]) == 0:
+          del self._handlers[topic]
+      else:
+        del self._handlers[topic]
     else:
       self._logger.warning('Trying to unsubscribe from a non-existent topic %s' % topic)
 
