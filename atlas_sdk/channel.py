@@ -1,11 +1,12 @@
 import logging
 from datetime import datetime
 from dateutil.parser import parse as dateParse
+from .runnable import Runnable
 from .adapters import ChannelAdapter
 from .pubsubs import PubSub
 from .constants import STARTED_AT_KEY, LANG_KEY
 
-class Channel:
+class Channel(Runnable):
   """A channel is single source of communication with the server.
 
     It is created for a particular user. It can be anything you want, a terminal,
@@ -107,13 +108,7 @@ class Channel:
         self._adapter.create()
 
   def run(self):
-    """Launch this channel, activate the underlying adapter.
-    """
-
     self._adapter.activate()
 
   def cleanup(self):
-    """Cleanup this channel, deactivate the adapter.
-    """
-
     self._adapter.deactivate()

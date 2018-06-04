@@ -24,6 +24,16 @@ class ChannelTests(unittest.TestCase):
     self.assertEqual('fr', channel.lang())
     self.assertIsNotNone(channel._created_at)
 
+  def test_with(self):
+    pb = PubSub()
+    adapter = ChannelAdapter(pb)
+    channel = Channel('a channel', adapter=adapter)
+
+    with channel:
+      self.assertTrue(channel._adapter._pubsub.is_started())
+
+    self.assertFalse(channel._adapter._pubsub.is_started())
+
   def test_check_still_connected(self):
     pb = PubSub()
     adapter = ChannelAdapter(pb)

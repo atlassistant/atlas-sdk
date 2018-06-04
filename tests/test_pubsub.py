@@ -67,6 +67,16 @@ class PubSubTests(unittest.TestCase):
     self.assertEqual(1, len(pb._handlers['event2']))
     self.assertEqual(handler, pb._handlers['event1'][0])
 
+  def test_with(self):
+    pb = PubSub()
+
+    self.assertFalse(pb.is_started())
+
+    with pb:
+      self.assertTrue(pb.is_started())
+
+    self.assertFalse(pb.is_started())
+
   def test_unsubscribe(self):
     obj = types.SimpleNamespace()
     obj.event1_handler = MagicMock()

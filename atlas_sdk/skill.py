@@ -1,7 +1,8 @@
 from .pubsubs import PubSub
+from .runnable import Runnable
 from .adapters import SkillAdapter
 
-class Skill:
+class Skill(Runnable):
   """A skill executes action based on intents parsed by the NLU.
 
   You must register your skill to specific intents and your handlers will be called by
@@ -19,6 +20,12 @@ class Skill:
 
   def add_intent_handler(self, intent_name, handler):
     pass
+
+  def run(self):
+    self._adapter.activate()
+
+  def cleanup(self):
+    self._adapter.deactivate()
 
   @classmethod
   def from_config(cls, path):

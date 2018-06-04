@@ -20,6 +20,13 @@ class PubSub:
     self._logger = logging.getLogger(self.__class__.__name__.lower())
     self._is_started = False
 
+  def __enter__(self):
+    self.start()
+    return self
+
+  def __exit__(self, type, value, traceback):
+    self.stop()
+
   def is_started(self):
     """Checks if this PubSub interface has been started.
 
