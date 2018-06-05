@@ -37,12 +37,13 @@ class PubSub:
 
     return self._is_started
 
-  def publish(self, topic, payload=None):
+  def publish(self, topic, payload=None, ensure_delivery=False):
     """Publish a message to the given topic.
 
     Args:
       topic (str): Event to be published
       payload (obj): Any data to be sent with the event
+      ensure_delivery (bool): Should the pubsub wait for a successful publish
     
     """
 

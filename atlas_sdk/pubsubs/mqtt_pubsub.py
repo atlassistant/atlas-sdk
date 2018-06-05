@@ -55,13 +55,14 @@ class MQTTPubSub(PubSub):
   def _on_message(self, client, userdata, msg):
     self.on_received(msg.topic, msg.payload)
 
-  def publish(self, topic, payload=None):
+  def publish(self, topic, payload=None, ensure_delivery=False):
     self._logger.debug('Publishing to %s with payload %s' % (topic, payload))
 
     if topic in lifecycle_topics:
       self.on_received(topic, payload)
     else:
-      self._client.publish(topic, payload, qos=1)
+      qos = 1 if ensure_delivery else 0
+      self._client.publish(topic, payload, qos)
 
   def subscribe(self, topic, handler):
     super(MQTTPubSub, self).subscribe(topic, handler)

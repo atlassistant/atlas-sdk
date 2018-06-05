@@ -31,7 +31,7 @@ class Config(dict):
       cur_search_object = dict(cur_search_object) # Make a shallow copy
 
       for key in keys_to_remove:
-        del cur_search_object[key]
+        cur_search_object.pop(key, None)
     
     return cur_search_object
 

@@ -58,14 +58,14 @@ class ChannelAdapter(PubSubAdapter):
 
     self._pubsub.publish(CHANNEL_CREATE_TOPIC % self._channel_id, dumps({
       USER_ID_KEY: self._user_id
-    }))
+    }), ensure_delivery=True)
 
   def destroy(self):
     """Inform atlas that this channel has been destroyed. This will delete the 
     associated agent.
     """
 
-    self._pubsub.publish(CHANNEL_DESTROY_TOPIC % self._channel_id)
+    self._pubsub.publish(CHANNEL_DESTROY_TOPIC % self._channel_id, ensure_delivery=True)
 
   def parse(self, msg):
     """Sends a message to be parsed.

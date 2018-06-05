@@ -51,7 +51,7 @@ database:
     }
     c = Config(data)
 
-    result = c.get('broker', keys_to_remove=['port'])
+    result = c.get('broker', keys_to_remove=['port', 'not_in_config'])
 
     self.assertEqual({ 'host': 'localhost' }, result)
     self.assertEqual(data, dict(c)) # Check if has not been modified

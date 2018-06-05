@@ -69,11 +69,11 @@ class ChannelAdapterTests(unittest.TestCase):
     pb.publish = MagicMock()
 
     channel.create()
-    pb.publish.assert_called_once_with(topics.CHANNEL_CREATE_TOPIC % 'channel', '{"uid": "1337"}')
+    pb.publish.assert_called_once_with(topics.CHANNEL_CREATE_TOPIC % 'channel', '{"uid": "1337"}', ensure_delivery=True)
     pb.publish.reset_mock()
 
     channel.destroy()
-    pb.publish.assert_called_once_with(topics.CHANNEL_DESTROY_TOPIC % 'channel')
+    pb.publish.assert_called_once_with(topics.CHANNEL_DESTROY_TOPIC % 'channel', ensure_delivery=True)
     pb.publish.reset_mock()
 
     channel.parse('a message to parse')

@@ -4,6 +4,7 @@ from dateutil.parser import parse as dateParse
 from .runnable import Runnable
 from .adapters import ChannelAdapter
 from .pubsubs import PubSub
+from .config import load_from_yaml, config
 from .constants import STARTED_AT_KEY, LANG_KEY
 
 class Channel(Runnable):
@@ -112,3 +113,18 @@ class Channel(Runnable):
 
   def cleanup(self):
     self._adapter.deactivate()
+
+  @classmethod
+  def from_config(cls, path):
+    """Instantiates a new channel based on the configuration file given.
+
+    Args:
+      path (str): Path to the configuration file
+    Returns:
+      Channel: A channel instance
+
+    """
+
+    load_from_yaml(path)
+
+    return Channel(**config.get('channel', {}))

@@ -1,13 +1,28 @@
 import unittest, types
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch, mock_open
 from datetime import timedelta
-from unittest.mock import MagicMock
 from atlas_sdk.channel import Channel
 from atlas_sdk.adapters import ChannelAdapter
 from atlas_sdk.pubsubs import PubSub
 from atlas_sdk.constants import STARTED_AT_KEY
 
 class ChannelTests(unittest.TestCase):
+
+  @patch('builtins.open')
+  def test_from_config(self, m_open):
+    m_open.side_effect = [
+      mock_open(read_data='''
+channel:
+  id: my_channel
+messaging:
+  host: 127.0.0.1
+''').return_value
+    ]
+
+    channel = Channel.from_config('conf.yml')
+
+    self.assertEqual('my_channel', channel._adapter._channel_id)
+    self.assertEqual('127.0.0.1', channel._adapter._pubsub._host)
 
   def test_created(self):
     pb = PubSub()

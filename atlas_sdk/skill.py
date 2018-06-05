@@ -1,6 +1,8 @@
 from .pubsubs import PubSub
 from .runnable import Runnable
 from .adapters import SkillAdapter
+from .config import load_from_yaml, config
+from .constants import NAME_KEY, DESCRIPTION_KEY, VERSION_KEY, AUTHOR_KEY, INTENTS_KEY
 
 class Skill(Runnable):
   """A skill executes action based on intents parsed by the NLU.
@@ -12,14 +14,49 @@ class Skill(Runnable):
   
   """
 
-  def __init__(self, name, version, description=None, author=None, adapter=None):
+  def __init__(self, name, version, description=None, author=None, intents={}, adapter=None):
     """Initialize a new skill.
+
+    Args:
+      name (str): Name of the skill
+      version (str): Version of the skill
+      description (str): Optional description
+      author (str): Optional author
+      intents (dict): Dictionary of intents managed by your skill with associated slots
+      adapter (SkillAdapter): Adapter to use to communicate with the outside world
+
     """
 
+    self.name = name
+    self.version = version
+    self.author = author
+    self.description = description
+    self.intents = intents
+
     self._adapter = adapter or SkillAdapter(PubSub.from_config())
+    self._adapter.attach({
+      NAME_KEY: self.name,
+      VERSION_KEY: self.version,
+      AUTHOR_KEY: self.author,
+      DESCRIPTION_KEY: self.description,
+      INTENTS_KEY: self.intents,
+    })
+
+    self._adapter.on_discovery_ping = self.send_discovery_request
 
   def add_intent_handler(self, intent_name, handler):
+    # self._adapter.subscribe()
     pass
+
+  def send_discovery_request(self, data):
+    """Sends a discovery request.
+
+    Args:
+      data (dict): Data sent by the service
+
+    """
+
+    self._adapter.pong()
 
   def run(self):
     self._adapter.activate()
@@ -38,4 +75,6 @@ class Skill(Runnable):
 
     """
 
-    pass
+    load_from_yaml(path)
+
+    return Skill(**config.get('skill', {}))
