@@ -46,7 +46,8 @@ class SkillAdapter(PubSubAdapter):
     """
 
     if intent not in self._skill_data.get(INTENTS_KEY, {}):
-      self._logger.warning('Subscribing to "%s", which is not part of the skill metadata!' % intent)
+      self._logger.warning('Subscribing to "%s", which is not part of the skill metadata! Added it' % intent)
+      self._skill_data.get(INTENTS_KEY, {})[intent] = None
 
     self._pubsub.subscribe(intent, json(handler))
 

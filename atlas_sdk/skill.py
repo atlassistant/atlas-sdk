@@ -3,6 +3,20 @@ from .runnable import Runnable
 from .adapters import SkillAdapter
 from .config import load_from_yaml, config
 from .constants import NAME_KEY, DESCRIPTION_KEY, VERSION_KEY, AUTHOR_KEY, INTENTS_KEY
+from .request import Request
+
+def intent_handler(adapter, handler):
+  """Skill specific handler to convert raw data to a Request object.
+
+  Args:
+    adapter (SkillAdapter): Adapter to use
+    handler (callable): Handler to call
+  Returns:
+    callable: Lambda to run the handler with a Request arg
+
+  """
+
+  return lambda data: handler(Request(adapter, data))
 
 class Skill(Runnable):
   """A skill executes action based on intents parsed by the NLU.
@@ -44,9 +58,16 @@ class Skill(Runnable):
 
     self._adapter.on_discovery_ping = self.send_discovery_request
 
-  def add_intent_handler(self, intent_name, handler):
-    # self._adapter.subscribe()
-    pass
+  def handle(self, intent, handler):
+    """Subscribe for a given intent.
+
+    Args:
+      intent (str): Intent name to handle
+      handler (callable): Handler to call, it will received a Request object
+
+    """
+
+    self._adapter.handle(intent, intent_handler(self._adapter, handler))
 
   def send_discovery_request(self, data):
     """Sends a discovery request.
@@ -55,6 +76,8 @@ class Skill(Runnable):
       data (dict): Data sent by the service
 
     """
+
+    # TODO Check for version matching
 
     self._adapter.pong()
 

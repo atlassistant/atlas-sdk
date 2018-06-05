@@ -1,7 +1,7 @@
 import unittest, types
 from unittest.mock import MagicMock
 from atlas_sdk.pubsubs import PubSub
-from atlas_sdk.topics import DISCOVERY_PING_TOPIC
+from atlas_sdk.topics import DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC
 from atlas_sdk.pubsubs.constants import ON_CONNECTED_TOPIC
 from atlas_sdk.adapters.skill_adapter import SkillAdapter
 
@@ -61,7 +61,17 @@ class SkillAdapterTests(unittest.TestCase):
     obj.handler2.assert_called_once_with({'cid': 'conversation_id2'})
 
   def test_unsubscriptions(self):
-    pass
+    self.skipTest('TODO')
 
   def test_publications(self):
-    pass
+    data = { 'intents': { 'something': None, 'somethingElse': None } }
+
+    pb = PubSub()
+    pb.publish = MagicMock()
+
+    skill = SkillAdapter(pb)
+    skill.attach(data)
+
+    skill.pong()
+
+    pb.publish.assert_called_once_with(DISCOVERY_PONG_TOPIC, '{"intents": {"something": null, "somethingElse": null}}')
