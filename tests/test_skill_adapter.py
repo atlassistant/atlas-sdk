@@ -1,7 +1,8 @@
 import unittest, types
 from unittest.mock import MagicMock
 from atlas_sdk.pubsubs import PubSub
-from atlas_sdk.topics import DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC
+from atlas_sdk.topics import DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC, DIALOG_END_TOPIC, \
+  DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC
 from atlas_sdk.pubsubs.constants import ON_CONNECTED_TOPIC
 from atlas_sdk.adapters.skill_adapter import SkillAdapter
 
@@ -61,7 +62,23 @@ class SkillAdapterTests(unittest.TestCase):
     obj.handler2.assert_called_once_with({'cid': 'conversation_id2'})
 
   def test_unsubscriptions(self):
-    self.skipTest('TODO')
+    obj = types.SimpleNamespace()
+    obj.intent1_handler = MagicMock()
+    obj.intent2_handler = MagicMock()
+
+    pb = PubSub()
+    skill = SkillAdapter(pb)
+
+    skill.handle('intent1', obj.intent1_handler)
+    skill.handle('intent2', obj.intent2_handler)
+
+    self.assertTrue('intent1' in skill._pubsub._handlers)
+    self.assertTrue('intent2' in skill._pubsub._handlers)
+    
+    skill.deactivate()
+
+    self.assertFalse('intent1' in skill._pubsub._handlers)
+    self.assertFalse('intent2' in skill._pubsub._handlers)
 
   def test_publications(self):
     data = { 'intents': { 'something': None, 'somethingElse': None } }
@@ -75,3 +92,17 @@ class SkillAdapterTests(unittest.TestCase):
     skill.pong()
 
     pb.publish.assert_called_once_with(DISCOVERY_PONG_TOPIC, '{"intents": {"something": null, "somethingElse": null}}')
+    pb.publish.reset_mock()
+
+    skill.end({})
+
+    pb.publish.assert_called_once_with(DIALOG_END_TOPIC, "{}")
+    pb.publish.reset_mock()
+
+    skill.answer({ 'text': 'Hello you!' })
+    pb.publish.assert_called_once_with(DIALOG_ANSWER_TOPIC, '{"text": "Hello you!"}')
+    pb.publish.reset_mock()
+
+    skill.ask({ 'slot': 'location' })
+    pb.publish.assert_called_once_with(DIALOG_ASK_TOPIC, '{"slot": "location"}')
+    pb.publish.reset_mock()

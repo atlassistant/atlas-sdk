@@ -6,10 +6,14 @@ META_SESSION_ID_KEY = '__sid'
 META_CONVERSATION_ID_KEY = '__cid'
 META_USER_ID_KEY = '__uid'
 META_LANG_KEY = '__lang'
+META_SETTINGS_KEY = '__settings'
 
 USER_ID_KEY = 'uid'
 LANG_KEY = 'lang'
 STARTED_AT_KEY = 'started_at'
+
+TEXT_KEY = 'text'
+SLOT_KEY = 'slot'
 
 INTENTS_KEY = 'intents'
 NAME_KEY = 'name'

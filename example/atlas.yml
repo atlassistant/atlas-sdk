@@ -1,0 +1,6 @@
+skill:
+  name: MySkill
+  version: 1.0.0
+  author: Julien LEICHER
+  intents:
+    example_intent:

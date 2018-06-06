@@ -75,7 +75,7 @@ class MQTTPubSub(PubSub):
     super(MQTTPubSub, self).unsubscribe(topic)
     
     # If there is no handlers for this topic, unsubscribe
-    if topic not in self._handlers:
+    if topic not in self._handlers and topic not in lifecycle_topics:
       self._client.unsubscribe(topic)
 
   def start(self):

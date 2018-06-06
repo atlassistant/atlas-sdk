@@ -2,7 +2,8 @@ from json import dumps
 from ..pubsubs.handlers import json, notset, empty
 from .pubsub_adapter import PubSubAdapter
 from ..pubsubs.constants import ON_CONNECTED_TOPIC
-from ..topics import INTENT_TOPIC, DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC
+from ..topics import INTENT_TOPIC, DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC, \
+  DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC, DIALOG_END_TOPIC
 from ..constants import INTENTS_KEY
 
 class SkillAdapter(PubSubAdapter):
@@ -19,7 +20,9 @@ class SkillAdapter(PubSubAdapter):
 
     super(SkillAdapter, self).__init__(pubsub)
 
-    self._skill_data = {}
+    self._skill_data = {
+      INTENTS_KEY: {},
+    }
 
     self.on_discovery_ping = notset(self._logger)
 
@@ -56,6 +59,36 @@ class SkillAdapter(PubSubAdapter):
     """
 
     self._pubsub.publish(DISCOVERY_PONG_TOPIC, dumps(self._skill_data))
+
+  def ask(self, data):
+    """Ask something to the user.
+
+    Args:
+      data (dict): Data to send with the request
+      
+    """
+
+    self._pubsub.publish(DIALOG_ASK_TOPIC, dumps(data))
+
+  def answer(self, data):
+    """Answer something to the user.
+
+    Args:
+      data (dict): Data to send with the request
+
+    """
+
+    self._pubsub.publish(DIALOG_ANSWER_TOPIC, dumps(data))
+
+  def end(self, data):
+    """Ends a conversation with the user.
+
+    Args:
+      data (dict): Data to send with the request
+
+    """
+    
+    self._pubsub.publish(DIALOG_END_TOPIC, dumps(data))
 
   def activate(self):
     self._on_connected_handler = empty(self.pong)
