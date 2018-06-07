@@ -21,6 +21,7 @@ class ChannelAdapterTests(unittest.TestCase):
   def test_subscriptions(self):
     pb = PubSub()
     channel = ChannelAdapter(pb)
+    channel.create = MagicMock()
     channel.attach('channel', '1337')
     
     channel.on_answer = MagicMock()
@@ -29,7 +30,6 @@ class ChannelAdapterTests(unittest.TestCase):
     channel.on_destroyed = MagicMock()
     channel.on_end = MagicMock()
     channel.on_work = MagicMock()
-    channel.on_discovery_ping = MagicMock()
 
     channel.activate()
     
@@ -42,7 +42,7 @@ class ChannelAdapterTests(unittest.TestCase):
     pb.on_received(topics.CHANNEL_CREATED_TOPIC % 'channel', '{ "channel": "created" }')
     pb.on_received(topics.CHANNEL_CREATED_TOPIC % 'another_channel', '{ "channel": "created" }')
 
-    pb.on_received(topics.DISCOVERY_PING_TOPIC, "{}")
+    pb.on_received(topics.ATLAS_STATUS_LOADED, "{}")
 
     pb.on_received(topics.CHANNEL_DESTROYED_TOPIC % 'channel')
     pb.on_received(topics.CHANNEL_DESTROYED_TOPIC % 'another_channel')
@@ -57,7 +57,7 @@ class ChannelAdapterTests(unittest.TestCase):
     channel.on_ask.assert_called_once_with({ 'channel': 'ask' })
     channel.on_created.assert_called_once_with({ 'channel': 'created' })
     channel.on_destroyed.assert_called_once()
-    channel.on_discovery_ping.assert_called_once_with({})
+    channel.create.assert_called_once_with()
     channel.on_end.assert_called_once()
     channel.on_work.assert_called_once()
     

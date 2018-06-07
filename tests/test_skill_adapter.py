@@ -1,7 +1,7 @@
 import unittest, types
 from unittest.mock import MagicMock
 from atlas_sdk.pubsubs import PubSub
-from atlas_sdk.topics import DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC, DIALOG_END_TOPIC, \
+from atlas_sdk.topics import ATLAS_STATUS_LOADED, ATLAS_REGISTRY_SKILL, DIALOG_END_TOPIC, \
   DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC
 from atlas_sdk.pubsubs.constants import ON_CONNECTED_TOPIC
 from atlas_sdk.adapters.skill_adapter import SkillAdapter
@@ -35,8 +35,7 @@ class SkillAdapterTests(unittest.TestCase):
       }
     })
 
-    skill.pong = MagicMock()
-    skill.on_discovery_ping = MagicMock()
+    skill.register = MagicMock()
 
     skill.handle('something', obj.handler1)
     skill.handle('somethingElse', obj.handler2)
@@ -45,11 +44,11 @@ class SkillAdapterTests(unittest.TestCase):
 
     pb.on_received(ON_CONNECTED_TOPIC)
 
-    skill.pong.assert_called_once();
-    skill.on_discovery_ping.assert_not_called();
+    skill.register.assert_called_once();
+    skill.register.reset_mock()
 
-    pb.on_received(DISCOVERY_PING_TOPIC, '{ "version": "1.0.0" }')
-    skill.on_discovery_ping.assert_called_once_with({ 'version': '1.0.0' });
+    pb.on_received(ATLAS_STATUS_LOADED, '{ "version": "1.0.0" }')
+    skill.register.assert_called_once();
 
     pb.on_received('something', '{"cid": "conversation_id"}')
 
@@ -89,9 +88,9 @@ class SkillAdapterTests(unittest.TestCase):
     skill = SkillAdapter(pb)
     skill.attach(data)
 
-    skill.pong()
+    skill.register()
 
-    pb.publish.assert_called_once_with(DISCOVERY_PONG_TOPIC, '{"intents": {"something": null, "somethingElse": null}}')
+    pb.publish.assert_called_once_with(ATLAS_REGISTRY_SKILL, '{"intents": {"something": null, "somethingElse": null}}')
     pb.publish.reset_mock()
 
     skill.end({})

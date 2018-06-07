@@ -10,12 +10,12 @@ META_SETTINGS_KEY = '__settings'
 
 USER_ID_KEY = 'uid'
 LANG_KEY = 'lang'
-STARTED_AT_KEY = 'started_at'
 
 TEXT_KEY = 'text'
 SLOT_KEY = 'slot'
 
 INTENTS_KEY = 'intents'
+SETTINGS_KEY = 'settings'
 NAME_KEY = 'name'
 DESCRIPTION_KEY = 'description'
 AUTHOR_KEY = 'author'

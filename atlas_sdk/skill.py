@@ -2,7 +2,8 @@ from .pubsubs import PubSub
 from .runnable import Runnable
 from .adapters import SkillAdapter
 from .config import load_from_yaml, config
-from .constants import NAME_KEY, DESCRIPTION_KEY, VERSION_KEY, AUTHOR_KEY, INTENTS_KEY
+from .constants import NAME_KEY, DESCRIPTION_KEY, VERSION_KEY, AUTHOR_KEY, INTENTS_KEY, \
+  SETTINGS_KEY
 from .request import Request
 
 def intent_handler(adapter, handler):
@@ -28,7 +29,7 @@ class Skill(Runnable):
   
   """
 
-  def __init__(self, name, version, description=None, author=None, intents={}, adapter=None):
+  def __init__(self, name, version, description=None, author=None, intents={}, settings=[], adapter=None):
     """Initialize a new skill.
 
     Args:
@@ -37,6 +38,7 @@ class Skill(Runnable):
       description (str): Optional description
       author (str): Optional author
       intents (dict): Dictionary of intents managed by your skill with associated slots
+      settings (list): List of settings key used by this skill, their value will be send by atlas on intent request
       adapter (SkillAdapter): Adapter to use to communicate with the outside world
 
     """
@@ -46,6 +48,7 @@ class Skill(Runnable):
     self.author = author
     self.description = description
     self.intents = intents
+    self.settings = settings
 
     self._adapter = adapter or SkillAdapter(PubSub.from_config())
     self._adapter.attach({
@@ -54,9 +57,8 @@ class Skill(Runnable):
       AUTHOR_KEY: self.author,
       DESCRIPTION_KEY: self.description,
       INTENTS_KEY: self.intents,
+      SETTINGS_KEY: self.settings,
     })
-
-    self._adapter.on_discovery_ping = self.send_discovery_request
 
   def handle(self, intent, handler):
     """Subscribe for a given intent.
@@ -68,18 +70,6 @@ class Skill(Runnable):
     """
 
     self._adapter.handle(intent, intent_handler(self._adapter, handler))
-
-  def send_discovery_request(self, data):
-    """Sends a discovery request.
-
-    Args:
-      data (dict): Data sent by the service
-
-    """
-
-    # TODO Check for version matching
-
-    self._adapter.pong()
 
   def run(self):
     self._adapter.activate()

@@ -17,6 +17,8 @@ skill:
       - slotValue1
       - slotValue2
     showSomethingElse:
+  settings:
+    - server.url
 messaging:
   host: 127.0.0.1
 ''').return_value
@@ -31,3 +33,4 @@ messaging:
     self.assertTrue('showSomething' in skill.intents)
     self.assertEqual(['slotValue1', 'slotValue2'], skill.intents['showSomething'])
     self.assertTrue('showSomethingElse' in skill.intents)
+    self.assertEqual(['server.url'], skill.settings)

@@ -1,10 +1,14 @@
 """This file contains all topics available through atlas.
 """
 
-# Discovery related topics
+# atlas lifecycle events
 
-DISCOVERY_PING_TOPIC = 'atlas/discovery/ping'
-DISCOVERY_PONG_TOPIC = 'atlas/discovery/pong'
+ATLAS_STATUS_LOADING = 'atlas/status/loading'
+ATLAS_STATUS_LOADED = 'atlas/status/loaded'
+ATLAS_STATUS_UNLOADING = 'atlas/status/unloading'
+ATLAS_STATUS_UNLOADED = 'atlas/status/unloaded'
+
+ATLAS_REGISTRY_SKILL = 'atlas/registry/skill'
 
 # Dialog related topics, communication with an agent
 

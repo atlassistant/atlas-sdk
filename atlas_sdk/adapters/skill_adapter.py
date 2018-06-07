@@ -2,7 +2,7 @@ from json import dumps
 from ..pubsubs.handlers import json, notset, empty
 from .pubsub_adapter import PubSubAdapter
 from ..pubsubs.constants import ON_CONNECTED_TOPIC
-from ..topics import INTENT_TOPIC, DISCOVERY_PING_TOPIC, DISCOVERY_PONG_TOPIC, \
+from ..topics import INTENT_TOPIC, ATLAS_STATUS_LOADED, ATLAS_REGISTRY_SKILL, \
   DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC, DIALOG_END_TOPIC
 from ..constants import INTENTS_KEY
 
@@ -24,9 +24,6 @@ class SkillAdapter(PubSubAdapter):
       INTENTS_KEY: {},
     }
 
-    self.on_discovery_ping = notset(self._logger)
-
-    self._on_discovery_handler = None
     self._on_connected_handler = None
 
   def attach(self, skill_data):
@@ -48,17 +45,17 @@ class SkillAdapter(PubSubAdapter):
 
     """
 
-    if intent not in self._skill_data.get(INTENTS_KEY, {}):
+    if intent not in self._skill_data.get(INTENTS_KEY):
       self._logger.warning('Subscribing to "%s", which is not part of the skill metadata! Added it' % intent)
-      self._skill_data.get(INTENTS_KEY, {})[intent] = None
+      self._skill_data.get(INTENTS_KEY)[intent] = None
 
     self._pubsub.subscribe(intent, json(handler))
 
-  def pong(self):
-    """Sends a pong discovery answer.
+  def register(self):
+    """Sends a registry request attach to this skill.
     """
 
-    self._pubsub.publish(DISCOVERY_PONG_TOPIC, dumps(self._skill_data))
+    self._pubsub.publish(ATLAS_REGISTRY_SKILL, dumps(self._skill_data))
 
   def ask(self, data):
     """Ask something to the user.
@@ -91,20 +88,19 @@ class SkillAdapter(PubSubAdapter):
     self._pubsub.publish(DIALOG_END_TOPIC, dumps(data))
 
   def activate(self):
-    self._on_connected_handler = empty(self.pong)
-    self._on_discovery_handler = json(self.on_discovery_ping)
+    self._on_connected_handler = empty(self.register)
 
-    self._pubsub.subscribe(ON_CONNECTED_TOPIC,      self._on_connected_handler)
-    self._pubsub.subscribe(DISCOVERY_PING_TOPIC ,   self._on_discovery_handler)
+    self._pubsub.subscribe(ON_CONNECTED_TOPIC,        self._on_connected_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_LOADED ,      self._on_connected_handler)
 
     super(SkillAdapter, self).activate()
 
   def deactivate(self):
-    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC,    self._on_connected_handler)
-    self._pubsub.unsubscribe(DISCOVERY_PING_TOPIC,  self._on_discovery_handler)
+    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC,      self._on_connected_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED ,    self._on_connected_handler)
 
     # Unsubscribe properly to each metadata skills
-    for intent in self._skill_data.get(INTENTS_KEY, {}).keys():
+    for intent in self._skill_data.get(INTENTS_KEY).keys():
       self._pubsub.unsubscribe(intent)
 
     super(SkillAdapter, self).deactivate()

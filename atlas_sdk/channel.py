@@ -5,7 +5,6 @@ from .runnable import Runnable
 from .adapters import ChannelAdapter
 from .pubsubs import PubSub
 from .config import load_from_yaml, config
-from .constants import STARTED_AT_KEY, LANG_KEY
 
 class Channel(Runnable):
   """A channel is single source of communication with the server.
@@ -38,31 +37,15 @@ class Channel(Runnable):
     """
 
     self._logger = logging.getLogger(self.__class__.__name__)
-    self._created_at = None
-    self._lang = None
     self._adapter = adapter or ChannelAdapter(PubSub.from_config())
     self._adapter.attach(id, user_id)
 
-    self._adapter.on_discovery_ping = self.check_still_connected
-    self._adapter.on_created = self.on_created
-
     self._adapter.on_answer =     on_answer or self._adapter.on_answer
     self._adapter.on_ask =        on_ask or self._adapter.on_ask
+    self._adapter.on_created =    on_created or self._adapter.on_created
     self._adapter.on_destroyed =  on_destroyed or self._adapter.on_destroyed
     self._adapter.on_end =        on_end or self._adapter.on_end
     self._adapter.on_work =       on_work or self._adapter.on_work
-
-    self._on_created = on_created
-
-  def lang(self):
-    """Gets the channel language.
-
-    Returns:
-      str: Language of the channel
-
-    """
-
-    return self._lang
 
   def parse(self, msg):
     """Parses a message.
@@ -73,40 +56,6 @@ class Channel(Runnable):
     """
 
     self._adapter.parse(msg)
-
-  def on_created(self, data):
-    """Called when the channel has been created and an agent is ready.
-
-    Args:
-      data (dict): Data sent by the server
-    
-    """
-
-    self._created_at = datetime.utcnow()
-    self._lang = data.get(LANG_KEY)
-    
-    self._logger.debug('Channel created at %s for lang %s' % (self._created_at, self._lang))
-
-    if self._on_created:
-      self._on_created(data)
-
-  def check_still_connected(self, data):
-    """Upon discovery ping, checks if the channel is still connected to prevent
-    error when atlas has been down.
-
-    Args:
-      data (dict): Data sent by the server
-    
-    """
-
-    start_date_str = data.get(STARTED_AT_KEY)
-
-    if start_date_str:
-      start_date = dateParse(start_date_str)
-
-      if start_date > self._created_at:
-        self._logger.info('Recreating the channel, looks like the server has been restarted')
-        self._adapter.create()
 
   def run(self):
     self._adapter.activate()

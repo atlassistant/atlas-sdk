@@ -5,7 +5,7 @@ from ..pubsubs.constants import ON_CONNECTED_TOPIC
 from ..pubsubs.handlers import json, empty, notset
 from ..topics import CHANNEL_ANSWER_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_CREATE_TOPIC, \
   CHANNEL_CREATED_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_DESTROYED_TOPIC, CHANNEL_END_TOPIC, \
-  CHANNEL_WORK_TOPIC, DIALOG_PARSE_TOPIC, DISCOVERY_PING_TOPIC
+  CHANNEL_WORK_TOPIC, DIALOG_PARSE_TOPIC, ATLAS_STATUS_LOADED
 from ..constants import USER_ID_KEY
 
 class ChannelAdapter(PubSubAdapter):
@@ -33,9 +33,7 @@ class ChannelAdapter(PubSubAdapter):
     self.on_work = notset(self._logger)
     self.on_destroyed = notset(self._logger)
     self.on_created = notset(self._logger)
-    self.on_discovery_ping = notset(self._logger)
 
-    self._on_discovery_handler = None
     self._on_create_handler = None
 
   def attach(self, channel_id, user_id):
@@ -53,8 +51,6 @@ class ChannelAdapter(PubSubAdapter):
   def create(self):
     """Inform atlas that this channel has been created.
     """
-
-    self._created_at = datetime.utcnow()
 
     self._pubsub.publish(CHANNEL_CREATE_TOPIC % self._channel_id, dumps({
       USER_ID_KEY: self._user_id
@@ -79,10 +75,9 @@ class ChannelAdapter(PubSubAdapter):
 
   def activate(self):
     self._on_create_handler = empty(self.create)
-    self._on_discovery_handler = json(self.on_discovery_ping)
 
     self._pubsub.subscribe(ON_CONNECTED_TOPIC,                          self._on_create_handler)
-    self._pubsub.subscribe(DISCOVERY_PING_TOPIC,                        self._on_discovery_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_LOADED,                         self._on_create_handler)
 
     self._pubsub.subscribe(CHANNEL_ASK_TOPIC % self._channel_id,        json(self.on_ask))
     self._pubsub.subscribe(CHANNEL_ANSWER_TOPIC % self._channel_id,     json(self.on_answer))
@@ -101,8 +96,8 @@ class ChannelAdapter(PubSubAdapter):
 
     """
 
-    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC, self._on_create_handler)
-    self._pubsub.unsubscribe(DISCOVERY_PING_TOPIC, self._on_discovery_handler)
+    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC,  self._on_create_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED, self._on_create_handler)
 
     self._pubsub.unsubscribe(CHANNEL_ASK_TOPIC % self._channel_id)
     self._pubsub.unsubscribe(CHANNEL_ANSWER_TOPIC % self._channel_id)
