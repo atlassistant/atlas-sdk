@@ -14,6 +14,8 @@ broker:
 database:
   host: localhost
   name: My DB
+logging:
+  level: DEBUG
 ''').return_value
     ]
 
@@ -24,6 +26,14 @@ database:
     self.assertEqual(1883, config.get('broker.port'))
     self.assertEqual('localhost', config.get('database.host'))
     self.assertEqual('My DB', config.get('database.name'))
+    self.assertEqual('DEBUG', config.get('logging.level'))
+    
+    # The following doesn't work in tests but work on actual code, don't know why.
+
+    # import logging 
+
+    # l = logging.getLogger(__name__)
+    # self.assertEqual(logging.DEBUG, l.getEffectiveLevel())
 
   def test_empty_config(self):
     c = Config()
@@ -60,3 +70,4 @@ database:
     c = Config()
 
     self.assertEqual('something', c.get('doesntexist', 'something'))
+    self.assertEqual({ 'level': 'WARNING' }, c.get('logging', { 'level': 'WARNING' }))

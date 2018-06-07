@@ -1,4 +1,4 @@
-import yaml
+import yaml, logging
 
 class Config(dict):
   """Represents a global configuration object used in the entire system.
@@ -49,3 +49,8 @@ def load_from_yaml(path):
 
   with open(path, mode='r', encoding='utf-8') as f:
     config.update(yaml.load(f))
+  
+  # Configure the logging facility straight in!
+  logging.basicConfig(**config.get('logging', {
+    'level': 'WARNING'
+  }))

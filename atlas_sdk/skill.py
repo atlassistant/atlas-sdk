@@ -1,23 +1,30 @@
+import logging, gettext, sys, os
 from .pubsubs import PubSub
 from .runnable import Runnable
 from .adapters import SkillAdapter
 from .config import load_from_yaml, config
 from .constants import NAME_KEY, DESCRIPTION_KEY, VERSION_KEY, AUTHOR_KEY, INTENTS_KEY, \
-  SETTINGS_KEY
+  SETTINGS_KEY, I18N_DOMAIN_NAME, I18N_LOCALE_DIR
 from .request import Request
 
-def intent_handler(adapter, handler):
+def intent_handler(skill, handler):
   """Skill specific handler to convert raw data to a Request object.
 
   Args:
-    adapter (SkillAdapter): Adapter to use
+    adapter (Skill): Skill to use
     handler (callable): Handler to call
   Returns:
     callable: Lambda to run the handler with a Request arg
 
   """
 
-  return lambda data: handler(Request(adapter, data))
+  # Inner method which will setup the i18n module upon request reception
+  def trigger(data):
+    req = Request(skill._adapter, data)
+    skill._install_translation(req.lang)
+    handler(req)
+
+  return lambda data: trigger(data)
 
 class Skill(Runnable):
   """A skill executes action based on intents parsed by the NLU.
@@ -43,6 +50,7 @@ class Skill(Runnable):
 
     """
 
+    self._logger = logging.getLogger(self.__class__.__name__.lower())
     self.name = name
     self.version = version
     self.author = author
@@ -60,6 +68,8 @@ class Skill(Runnable):
       SETTINGS_KEY: self.settings,
     })
 
+    self._translations = {}
+
   def handle(self, intent, handler):
     """Subscribe for a given intent.
 
@@ -69,9 +79,37 @@ class Skill(Runnable):
 
     """
 
-    self._adapter.handle(intent, intent_handler(self._adapter, handler))
+    self._adapter.handle(intent, intent_handler(self, handler))
+
+  def _install_translation(self, lang):
+    """Setup the gettext for the given language.
+
+    Args:
+      lang (str): Language to setup
+
+    """
+
+    if not lang:
+      return
+      
+    self._translations.get(lang, gettext).install(I18N_DOMAIN_NAME)
+
+  def _load_translations(self):
+    """Loads the translation available.
+    """
+
+    script_dir = sys.path[0]
+    locale_dir = os.path.join(script_dir, I18N_LOCALE_DIR)
+
+    self._logger.info('Loading translations from %s' % locale_dir)
+
+    if os.path.isdir(locale_dir):
+      for lang in os.listdir(locale_dir):
+        self._translations[lang] = gettext.translation(I18N_DOMAIN_NAME, locale_dir=I18N_LOCALE_DIR, languages=[lang])
+        self._logger.debug('Loaded %s translations' % lang)
 
   def run(self):
+    self._load_translations()
     self._adapter.activate()
 
   def cleanup(self):

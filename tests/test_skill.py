@@ -1,6 +1,10 @@
-import unittest
-from unittest.mock import patch, mock_open
+import unittest, types
+from unittest.mock import patch, mock_open, MagicMock
+from atlas_sdk.pubsubs import PubSub
+from atlas_sdk.adapters import SkillAdapter
 from atlas_sdk import Skill
+from atlas_sdk import Request
+from atlas_sdk.topics import INTENT_TOPIC
 
 class SkillTests(unittest.TestCase):
   
@@ -34,3 +38,34 @@ messaging:
     self.assertEqual(['slotValue1', 'slotValue2'], skill.intents['showSomething'])
     self.assertTrue('showSomethingElse' in skill.intents)
     self.assertEqual(['server.url'], skill.settings)
+
+  def test_translations(self):
+    self.skipTest('Find a way to mock it')
+
+  def test_handlers(self):
+    obj = types.SimpleNamespace()
+    obj.handler1 = MagicMock()
+    obj.handler2 = MagicMock()
+
+    pb = PubSub()
+    adapter = SkillAdapter(pb)
+    skill = Skill(name='test skill', version='1.0.0', adapter=adapter)
+    skill._install_translation = MagicMock()
+
+    skill.handle('intent1', obj.handler1)
+    skill.handle('intent2', obj.handler2)
+
+    pb.on_received(INTENT_TOPIC % 'intent1', '{"__lang": "fr"}')
+    skill._install_translation.assert_called_once_with('fr')
+
+    obj.handler1.assert_called_once()
+    obj.handler2.assert_not_called()
+
+    skill._install_translation.reset_mock()
+    obj.handler1.reset_mock()
+    obj.handler2.reset_mock()
+    
+    pb.on_received(INTENT_TOPIC % 'intent2', '{"__lang": "en"}')
+    skill._install_translation.assert_called_once_with('en')
+    obj.handler1.assert_not_called()
+    obj.handler2.assert_called_once()

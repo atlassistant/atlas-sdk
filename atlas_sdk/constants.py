@@ -20,3 +20,6 @@ NAME_KEY = 'name'
 DESCRIPTION_KEY = 'description'
 AUTHOR_KEY = 'author'
 VERSION_KEY = 'version'
+
+I18N_LOCALE_DIR = 'locale'
+I18N_DOMAIN_NAME = 'messages'

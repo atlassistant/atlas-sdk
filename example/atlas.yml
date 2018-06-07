@@ -4,3 +4,5 @@ skill:
   author: Julien LEICHER
   intents:
     example_intent:
+logging:
+  level: DEBUG

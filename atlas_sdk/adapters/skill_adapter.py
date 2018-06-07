@@ -49,7 +49,7 @@ class SkillAdapter(PubSubAdapter):
       self._logger.warning('Subscribing to "%s", which is not part of the skill metadata! Added it' % intent)
       self._skill_data.get(INTENTS_KEY)[intent] = None
 
-    self._pubsub.subscribe(intent, json(handler))
+    self._pubsub.subscribe(INTENT_TOPIC % intent, json(handler))
 
   def register(self):
     """Sends a registry request attach to this skill.
@@ -101,6 +101,6 @@ class SkillAdapter(PubSubAdapter):
 
     # Unsubscribe properly to each metadata skills
     for intent in self._skill_data.get(INTENTS_KEY).keys():
-      self._pubsub.unsubscribe(intent)
+      self._pubsub.unsubscribe(INTENT_TOPIC % intent)
 
     super(SkillAdapter, self).deactivate()
