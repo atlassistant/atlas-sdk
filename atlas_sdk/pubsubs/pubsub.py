@@ -66,7 +66,10 @@ class PubSub:
 
     if handlers:
       for handler in handlers:
-        handler(topic, payload)
+        try:
+          handler(topic, payload)
+        except Exception as e:
+          self._logger.critical(e.msg)
     else:
       self._logger.debug('No handler found for %s' % topic)
 
