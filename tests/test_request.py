@@ -32,6 +32,22 @@ class RequestTests(unittest.TestCase):
     self.assertEqual('avalue', request.settings.get('aparam'))
     self.assertEqual(data, request._data)
 
+  def test_slot(self):
+    pb = PubSub()
+    adapter = SkillAdapter(pb)
+
+    data = {
+      'location': [{
+        'value': 'Paris'
+      }, {
+        'value': 'London'
+      }]
+    }
+
+    request = Request(adapter, data)
+    self.assertEqual('Paris', request.slot('location').first().value)
+    self.assertEqual('London', request.slot('location').last().value)
+
   def test_end(self):
     pb = PubSub()
     pb.publish = MagicMock()
@@ -52,7 +68,11 @@ class RequestTests(unittest.TestCase):
 
     request.ask('location', 'Choose a location')
 
-    pb.publish.assert_called_once_with(DIALOG_ASK_TOPIC, '{"__cid": "conversation_id", "slot": "location", "text": "Choose a location"}')
+    pb.publish.assert_called_once_with(DIALOG_ASK_TOPIC, '{"__cid": "conversation_id", "slot": "location", "text": "Choose a location", "choices": null}')
+    pb.publish.reset_mock()
+
+    request.ask('location', 'Choose a location', choices=['Paris', 'London'])
+    pb.publish.assert_called_once_with(DIALOG_ASK_TOPIC, '{"__cid": "conversation_id", "slot": "location", "text": "Choose a location", "choices": ["Paris", "London"]}')
 
   def test_answer(self):
     pb = PubSub()
@@ -63,10 +83,10 @@ class RequestTests(unittest.TestCase):
 
     request.answer('hello')
 
-    pb.publish.assert_called_once_with(DIALOG_ANSWER_TOPIC, '{"__cid": "conversation_id", "text": "hello"}')
+    pb.publish.assert_called_once_with(DIALOG_ANSWER_TOPIC, '{"__cid": "conversation_id", "text": "hello", "cards": null}')
     pb.publish.reset_mock()
 
     request.answer('hello with end', end_conversation=True)
 
-    pb.publish.assert_any_call(DIALOG_ANSWER_TOPIC, '{"__cid": "conversation_id", "text": "hello with end"}')
+    pb.publish.assert_any_call(DIALOG_ANSWER_TOPIC, '{"__cid": "conversation_id", "text": "hello with end", "cards": null}')
     pb.publish.assert_any_call(DIALOG_END_TOPIC, '{"__cid": "conversation_id"}')

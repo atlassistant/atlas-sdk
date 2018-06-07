@@ -23,7 +23,7 @@ def json(handler):
 
   """
 
-  return lambda topic, data: handler(loads(data))
+  return lambda topic, data: handler(loads(data) if data else {})
 
 def data(handler):
   """Returns a lambda which will take a topic and raw data and call the handler

@@ -13,6 +13,14 @@ LANG_KEY = 'lang'
 
 TEXT_KEY = 'text'
 SLOT_KEY = 'slot'
+CHOICES_KEY = 'choices'
+CARDS_KEY = 'cards'
+
+CARD_MEDIA = 'media'
+CARD_HEADER = 'header'
+CARD_HEADER_LINK = 'header_link'
+CARD_SUBHEAD = 'subhead'
+CARD_TEXT = 'text'
 
 INTENTS_KEY = 'intents'
 SETTINGS_KEY = 'settings'

@@ -1,10 +1,11 @@
 from json import dumps
-from ..pubsubs.handlers import json, notset, empty
+from ..pubsubs.handlers import json, notset
 from .pubsub_adapter import PubSubAdapter
 from ..pubsubs.constants import ON_CONNECTED_TOPIC
 from ..topics import INTENT_TOPIC, ATLAS_STATUS_LOADED, ATLAS_REGISTRY_SKILL, \
   DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC, DIALOG_END_TOPIC
-from ..constants import INTENTS_KEY
+from ..constants import INTENTS_KEY, VERSION_KEY
+from ..utils import validate_version
 
 class SkillAdapter(PubSubAdapter):
   
@@ -51,9 +52,18 @@ class SkillAdapter(PubSubAdapter):
 
     self._pubsub.subscribe(INTENT_TOPIC % intent, json(handler))
 
-  def register(self):
+  def register(self, data={}):
     """Sends a registry request attach to this skill.
+
+    Args:
+      data (dict): Data sent by the server
+
     """
+
+    version_str = data.get(VERSION_KEY)
+
+    if version_str and not validate_version(version_str):
+      self._logger.warning('atlas version %s did not match SDK requirements! Things could go wrong!' % version_str)
 
     self._pubsub.publish(ATLAS_REGISTRY_SKILL, dumps(self._skill_data))
 
@@ -88,7 +98,7 @@ class SkillAdapter(PubSubAdapter):
     self._pubsub.publish(DIALOG_END_TOPIC, dumps(data))
 
   def activate(self):
-    self._on_connected_handler = empty(self.register)
+    self._on_connected_handler = json(self.register)
 
     self._pubsub.subscribe(ON_CONNECTED_TOPIC,        self._on_connected_handler)
     self._pubsub.subscribe(ATLAS_STATUS_LOADED ,      self._on_connected_handler)

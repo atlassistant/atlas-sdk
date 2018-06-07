@@ -48,7 +48,7 @@ class SkillAdapterTests(unittest.TestCase):
     skill.register.reset_mock()
 
     pb.on_received(ATLAS_STATUS_LOADED, '{ "version": "1.0.0" }')
-    skill.register.assert_called_once();
+    skill.register.assert_called_once_with({ 'version': '1.0.0' });
 
     pb.on_received(INTENT_TOPIC % 'something', '{"cid": "conversation_id"}')
 
