@@ -46,10 +46,15 @@ messaging:
     obj = types.SimpleNamespace()
     obj.handler1 = MagicMock()
     obj.handler2 = MagicMock()
+    obj.on_atlas_loaded = MagicMock()
+    obj.on_atlas_unloaded = MagicMock()
 
     pb = PubSub()
     adapter = SkillAdapter(pb)
-    skill = Skill(name='test skill', version='1.0.0', adapter=adapter)
+    skill = Skill(name='test skill', version='1.0.0', adapter=adapter,
+      on_atlas_loaded=obj.on_atlas_loaded,
+      on_atlas_unloaded=obj.on_atlas_unloaded)
+      
     skill._install_translation = MagicMock()
 
     skill.handle('intent1', obj.handler1)
@@ -69,3 +74,8 @@ messaging:
     skill._install_translation.assert_called_once_with('en')
     obj.handler1.assert_not_called()
     obj.handler2.assert_called_once()
+
+    adapter.on_atlas_loaded({})
+    adapter.on_atlas_unloaded()
+    obj.on_atlas_loaded.assert_called_once_with({})
+    obj.on_atlas_unloaded.assert_called_once_with()

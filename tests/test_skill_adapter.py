@@ -2,7 +2,7 @@ import unittest, types
 from unittest.mock import MagicMock
 from atlas_sdk.pubsubs import PubSub
 from atlas_sdk.topics import ATLAS_STATUS_LOADED, ATLAS_REGISTRY_SKILL, DIALOG_END_TOPIC, \
-  DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC, INTENT_TOPIC
+  DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC, INTENT_TOPIC, ATLAS_STATUS_UNLOADED
 from atlas_sdk.pubsubs.constants import ON_CONNECTED_TOPIC
 from atlas_sdk.adapters.skill_adapter import SkillAdapter
 
@@ -36,6 +36,8 @@ class SkillAdapterTests(unittest.TestCase):
     })
 
     skill.register = MagicMock()
+    skill.on_atlas_loaded = MagicMock()
+    skill.on_atlas_unloaded = MagicMock()
 
     skill.handle('something', obj.handler1)
     skill.handle('somethingElse', obj.handler2)
@@ -49,6 +51,10 @@ class SkillAdapterTests(unittest.TestCase):
 
     pb.on_received(ATLAS_STATUS_LOADED, '{ "version": "1.0.0" }')
     skill.register.assert_called_once_with({ 'version': '1.0.0' });
+    skill.on_atlas_loaded.assert_called_once_with({ 'version': '1.0.0' });
+
+    pb.on_received(ATLAS_STATUS_UNLOADED)
+    skill.on_atlas_unloaded.assert_called_once_with();
 
     pb.on_received(INTENT_TOPIC % 'something', '{"cid": "conversation_id"}')
 

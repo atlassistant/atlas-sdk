@@ -41,6 +41,8 @@ messaging:
     obj.on_answer = MagicMock()
     obj.on_end = MagicMock()
     obj.on_work = MagicMock()
+    obj.on_atlas_loaded = MagicMock()
+    obj.on_atlas_unloaded = MagicMock()
 
     pb = PubSub()
     adapter = ChannelAdapter(pb)
@@ -51,7 +53,9 @@ messaging:
       on_answer=obj.on_answer,
       on_ask=obj.on_ask,
       on_end=obj.on_end,
-      on_work=obj.on_work)
+      on_work=obj.on_work,
+      on_atlas_loaded=obj.on_atlas_loaded,
+      on_atlas_unloaded=obj.on_atlas_unloaded)
 
     adapter.on_created({ 'lang': 'fr' })
     adapter.on_destroyed()
@@ -59,6 +63,8 @@ messaging:
     adapter.on_work()
     adapter.on_answer({})
     adapter.on_ask({})
+    adapter.on_atlas_loaded({})
+    adapter.on_atlas_unloaded()
 
     obj.on_created.assert_called_once_with({'lang': 'fr'})
     obj.on_destroyed.assert_called_once()
@@ -66,3 +72,5 @@ messaging:
     obj.on_work.assert_called_once()
     obj.on_answer.assert_called_once_with({})
     obj.on_ask.assert_called_once_with({})
+    obj.on_atlas_loaded.assert_called_once_with({})
+    obj.on_atlas_unloaded.assert_called_once_with()

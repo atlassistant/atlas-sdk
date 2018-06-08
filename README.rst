@@ -4,6 +4,7 @@ atlas-sdk
 .. image:: https://travis-ci.org/atlassistant/atlas-sdk.svg?branch=next
     :target: https://travis-ci.org/atlassistant/atlas-sdk
 
+
 Python SDK to interact with `atlas <https://github.com/atlassistant/atlas>`_. It also serves as a base for the **core** since it defines a lot of shared components.
 
 Installation

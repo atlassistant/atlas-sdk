@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from .runnable import Runnable
 from .adapters import ChannelAdapter
 from .pubsubs import PubSub
@@ -19,7 +18,8 @@ class Channel(Runnable):
   """
 
   def __init__(self, id, user_id=None, adapter=None, 
-    on_created=None, on_destroyed=None, on_answer=None, on_ask=None, on_end=None, on_work=None):
+    on_created=None, on_destroyed=None, on_answer=None, on_ask=None, on_end=None, on_work=None,
+    on_atlas_loaded=None, on_atlas_unloaded=None):
     """Creates a new channel.
 
     Args:
@@ -32,6 +32,8 @@ class Channel(Runnable):
       on_ask (callable): Called when the skill asks for user input
       on_end (callable): Called when a session has ended
       on_work (callable): Called when a skill is working
+      on_atlas_loaded (callable): Called when atlas server has been loaded
+      on_atlas_unloaded (callable): Called when atlas server has been unloaded
 
     """
 
@@ -39,12 +41,14 @@ class Channel(Runnable):
     self._adapter = adapter or ChannelAdapter(PubSub.from_config())
     self._adapter.attach(id, user_id)
 
-    self._adapter.on_answer =     on_answer or self._adapter.on_answer
-    self._adapter.on_ask =        on_ask or self._adapter.on_ask
-    self._adapter.on_created =    on_created or self._adapter.on_created
-    self._adapter.on_destroyed =  on_destroyed or self._adapter.on_destroyed
-    self._adapter.on_end =        on_end or self._adapter.on_end
-    self._adapter.on_work =       on_work or self._adapter.on_work
+    self._adapter.on_answer =         on_answer or self._adapter.on_answer
+    self._adapter.on_ask =            on_ask or self._adapter.on_ask
+    self._adapter.on_created =        on_created or self._adapter.on_created
+    self._adapter.on_destroyed =      on_destroyed or self._adapter.on_destroyed
+    self._adapter.on_end =            on_end or self._adapter.on_end
+    self._adapter.on_work =           on_work or self._adapter.on_work
+    self._adapter.on_atlas_loaded =   on_atlas_loaded or self._adapter.on_atlas_loaded
+    self._adapter.on_atlas_unloaded = on_atlas_unloaded or self._adapter.on_atlas_unloaded
 
   def parse(self, msg):
     """Parses a message.

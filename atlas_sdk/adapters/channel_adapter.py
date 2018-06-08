@@ -5,7 +5,7 @@ from ..pubsubs.constants import ON_CONNECTED_TOPIC
 from ..pubsubs.handlers import json, empty, notset
 from ..topics import CHANNEL_ANSWER_TOPIC, CHANNEL_ASK_TOPIC, CHANNEL_CREATE_TOPIC, \
   CHANNEL_CREATED_TOPIC, CHANNEL_DESTROY_TOPIC, CHANNEL_DESTROYED_TOPIC, CHANNEL_END_TOPIC, \
-  CHANNEL_WORK_TOPIC, DIALOG_PARSE_TOPIC, ATLAS_STATUS_LOADED
+  CHANNEL_WORK_TOPIC, DIALOG_PARSE_TOPIC, ATLAS_STATUS_LOADED, ATLAS_STATUS_UNLOADED
 from ..constants import USER_ID_KEY
 
 class ChannelAdapter(PubSubAdapter):
@@ -27,14 +27,18 @@ class ChannelAdapter(PubSubAdapter):
 
     # This is what should be exposed
 
-    self.on_ask = notset(self._logger)
-    self.on_answer = notset(self._logger)
-    self.on_end = notset(self._logger)
-    self.on_work = notset(self._logger)
-    self.on_destroyed = notset(self._logger)
-    self.on_created = notset(self._logger)
+    self.on_ask =             notset(self._logger)
+    self.on_answer =          notset(self._logger)
+    self.on_end =             notset(self._logger)
+    self.on_work =            notset(self._logger)
+    self.on_destroyed =       notset(self._logger)
+    self.on_created =         notset(self._logger)
+    self.on_atlas_loaded =    notset(self._logger)
+    self.on_atlas_unloaded =  notset(self._logger)
 
-    self._on_create_handler = None
+    self._create_handler = None
+    self._loaded_handler = None
+    self._unloaded_handler = None
 
   def attach(self, channel_id, user_id):
     """Attach this adapter to the given ids, it should be called before the activate!
@@ -74,10 +78,14 @@ class ChannelAdapter(PubSubAdapter):
     self._pubsub.publish(DIALOG_PARSE_TOPIC % self._channel_id, msg)
 
   def activate(self):
-    self._on_create_handler = empty(self.create)
+    self._create_handler = empty(self.create)
+    self._loaded_handler = json(self.on_atlas_loaded)
+    self._unloaded_handler = empty(self.on_atlas_unloaded)
 
-    self._pubsub.subscribe(ON_CONNECTED_TOPIC,                          self._on_create_handler)
-    self._pubsub.subscribe(ATLAS_STATUS_LOADED,                         self._on_create_handler)
+    self._pubsub.subscribe(ON_CONNECTED_TOPIC,                          self._create_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_LOADED,                         self._create_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_LOADED,                         self._loaded_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_UNLOADED,                       self._unloaded_handler)
 
     self._pubsub.subscribe(CHANNEL_ASK_TOPIC % self._channel_id,        json(self.on_ask))
     self._pubsub.subscribe(CHANNEL_ANSWER_TOPIC % self._channel_id,     json(self.on_answer))
@@ -96,8 +104,10 @@ class ChannelAdapter(PubSubAdapter):
 
     """
 
-    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC,  self._on_create_handler)
-    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED, self._on_create_handler)
+    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC,      self._create_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED,     self._create_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED,     self._loaded_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_UNLOADED,   self._unloaded_handler)
 
     self._pubsub.unsubscribe(CHANNEL_ASK_TOPIC % self._channel_id)
     self._pubsub.unsubscribe(CHANNEL_ANSWER_TOPIC % self._channel_id)

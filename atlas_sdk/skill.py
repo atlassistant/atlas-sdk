@@ -36,7 +36,8 @@ class Skill(Runnable):
   
   """
 
-  def __init__(self, name, version, description=None, author=None, intents={}, settings=[], adapter=None):
+  def __init__(self, name, version, description=None, author=None, intents={}, settings=[], adapter=None,
+    on_atlas_loaded=None, on_atlas_unloaded=None):
     """Initialize a new skill.
 
     Args:
@@ -47,10 +48,13 @@ class Skill(Runnable):
       intents (dict): Dictionary of intents managed by your skill with associated slots
       settings (list): List of settings key used by this skill, their value will be send by atlas on intent request
       adapter (SkillAdapter): Adapter to use to communicate with the outside world
+      on_atlas_loaded (callable): Called when atlas server has been loaded
+      on_atlas_unloaded (callable): Called when atlas server has been unloaded
 
     """
 
     self._logger = logging.getLogger(self.__class__.__name__.lower())
+    self._translations = {}
     self.name = name
     self.version = version
     self.author = author
@@ -67,8 +71,9 @@ class Skill(Runnable):
       INTENTS_KEY: self.intents,
       SETTINGS_KEY: self.settings,
     })
-
-    self._translations = {}
+    
+    self._adapter.on_atlas_loaded =   on_atlas_loaded or self._adapter.on_atlas_loaded
+    self._adapter.on_atlas_unloaded = on_atlas_unloaded or self._adapter.on_atlas_unloaded
 
   def handle(self, intent, handler):
     """Subscribe for a given intent.

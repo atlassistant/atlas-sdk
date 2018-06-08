@@ -30,6 +30,8 @@ class ChannelAdapterTests(unittest.TestCase):
     channel.on_destroyed = MagicMock()
     channel.on_end = MagicMock()
     channel.on_work = MagicMock()
+    channel.on_atlas_loaded = MagicMock()
+    channel.on_atlas_unloaded = MagicMock()
 
     channel.activate()
     
@@ -43,6 +45,7 @@ class ChannelAdapterTests(unittest.TestCase):
     pb.on_received(topics.CHANNEL_CREATED_TOPIC % 'another_channel', '{ "channel": "created" }')
 
     pb.on_received(topics.ATLAS_STATUS_LOADED, "{}")
+    pb.on_received(topics.ATLAS_STATUS_UNLOADED)
 
     pb.on_received(topics.CHANNEL_DESTROYED_TOPIC % 'channel')
     pb.on_received(topics.CHANNEL_DESTROYED_TOPIC % 'another_channel')
@@ -58,6 +61,8 @@ class ChannelAdapterTests(unittest.TestCase):
     channel.on_created.assert_called_once_with({ 'channel': 'created' })
     channel.on_destroyed.assert_called_once()
     channel.create.assert_called_once_with()
+    channel.on_atlas_loaded.assert_called_once_with({})
+    channel.on_atlas_unloaded.assert_called_once_with()
     channel.on_end.assert_called_once()
     channel.on_work.assert_called_once()
     

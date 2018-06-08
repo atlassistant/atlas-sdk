@@ -1,9 +1,9 @@
 from json import dumps
-from ..pubsubs.handlers import json, notset
+from ..pubsubs.handlers import json, notset, empty
 from .pubsub_adapter import PubSubAdapter
 from ..pubsubs.constants import ON_CONNECTED_TOPIC
 from ..topics import INTENT_TOPIC, ATLAS_STATUS_LOADED, ATLAS_REGISTRY_SKILL, \
-  DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC, DIALOG_END_TOPIC
+  DIALOG_ANSWER_TOPIC, DIALOG_ASK_TOPIC, DIALOG_END_TOPIC, ATLAS_STATUS_UNLOADED
 from ..constants import INTENTS_KEY, VERSION_KEY
 from ..utils import validate_version
 
@@ -25,10 +25,15 @@ class SkillAdapter(PubSubAdapter):
       INTENTS_KEY: {},
     }
 
-    self._on_connected_handler = None
+    self.on_atlas_loaded =    notset(self._logger)
+    self.on_atlas_unloaded =  notset(self._logger)
+
+    self._register_handler = None
+    self._loaded_handler = None
+    self._unloaded_handler = None
 
   def attach(self, skill_data):
-    """Attach skill data to this adapter. Used by the pong method.
+    """Attach skill data to this adapter. Used by the register method.
 
     Args:
       skill_data (dict): Dictionary representing the skill, used for discovery purposes
@@ -98,16 +103,22 @@ class SkillAdapter(PubSubAdapter):
     self._pubsub.publish(DIALOG_END_TOPIC, dumps(data))
 
   def activate(self):
-    self._on_connected_handler = json(self.register)
+    self._register_handler = json(self.register)
+    self._loaded_handler = json(self.on_atlas_loaded)
+    self._unloaded_handler = empty(self.on_atlas_unloaded)
 
-    self._pubsub.subscribe(ON_CONNECTED_TOPIC,        self._on_connected_handler)
-    self._pubsub.subscribe(ATLAS_STATUS_LOADED ,      self._on_connected_handler)
+    self._pubsub.subscribe(ON_CONNECTED_TOPIC,        self._register_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_LOADED ,      self._register_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_LOADED,       self._loaded_handler)
+    self._pubsub.subscribe(ATLAS_STATUS_UNLOADED,     self._unloaded_handler)
 
     super(SkillAdapter, self).activate()
 
   def deactivate(self):
-    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC,      self._on_connected_handler)
-    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED ,    self._on_connected_handler)
+    self._pubsub.unsubscribe(ON_CONNECTED_TOPIC,      self._register_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED ,    self._register_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_LOADED,     self._loaded_handler)
+    self._pubsub.unsubscribe(ATLAS_STATUS_UNLOADED,   self._unloaded_handler)
 
     # Unsubscribe properly to each metadata skills
     for intent in self._skill_data.get(INTENTS_KEY).keys():
