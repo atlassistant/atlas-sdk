@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from dateutil.parser import parse as dateParse
 from .runnable import Runnable
 from .adapters import ChannelAdapter
 from .pubsubs import PubSub
