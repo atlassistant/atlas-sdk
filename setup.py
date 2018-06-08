@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 with open('README.rst', encoding='utf8') as f:
@@ -15,7 +15,7 @@ setup(
   author='Julien LEICHER',
   license='GPL-3.0',
   version=version,
-  packages=['atlas_sdk', 'atlas_sdk.pubsubs', 'atlas_sdk.facades'],
+  packages=find_packages(),
   include_package_data=True,
   install_requires=[
     'paho-mqtt==1.3.1',
