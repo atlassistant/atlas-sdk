@@ -29,7 +29,7 @@ class SlotData:
   def __len__(self):
     return len(self.data)
 
-  def empty(self):
+  def is_empty(self):
     """Returns true if it does not have any value.
 
     Returns:
@@ -46,7 +46,7 @@ class SlotData:
 
     """
 
-    return AttributeDict(self.data[0]) if not self.empty() else AttributeDict()
+    return AttributeDict(self.data[0]) if not self.is_empty() else AttributeDict()
 
   def last(self):
     """Retrieve the last value of a slot.
@@ -56,4 +56,4 @@ class SlotData:
 
     """
 
-    return AttributeDict(self.data[len(self.data) - 1]) if not self.empty() else AttributeDict()
+    return AttributeDict(self.data[len(self.data) - 1]) if not self.is_empty() else AttributeDict()
