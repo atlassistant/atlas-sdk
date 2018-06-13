@@ -101,7 +101,7 @@ class MQTTPubSub(PubSub):
       return self.publish(ON_CONNECTED_TOPIC)
       
     if self._user:
-        self._client.username_pw_set(self._user, self._password)
+      self._client.username_pw_set(self._user, self._password)
 
     try:
       self._client.connect(self._host, self._port)
