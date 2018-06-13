@@ -23,6 +23,7 @@ class MQTTPubSub(PubSub):
     super(MQTTPubSub, self).__init__()
 
     self._started_count = 0
+    self._connected_handlers_called = []
 
     self._client = Client(client_id)
     self._client.on_connect = self._on_connect
@@ -50,6 +51,7 @@ class MQTTPubSub(PubSub):
     self._is_started = False
     self._logger.info('❌ Disconnected')
 
+    self._connected_handlers_called = []
     self.publish(ON_DISCONNECTED_TOPIC)
 
   def _on_message(self, client, userdata, msg):
@@ -78,14 +80,24 @@ class MQTTPubSub(PubSub):
     if topic not in self._handlers and topic not in lifecycle_topics:
       self._client.unsubscribe(topic)
 
+  def on_received(self, topic, payload=None):
+    if topic == ON_CONNECTED_TOPIC:
+      handlers = [h for h in self._handlers.get(topic, []) if h not in self._connected_handlers_called]
+
+      for handler in handlers:
+        self._connected_handlers_called.append(handler)
+        try:
+          handler(topic, payload)
+        except Exception as e:
+          self._logger.critical('Exception in handler for topic %s: %s' % (topic, e.msg))
+    else:
+      super(MQTTPubSub, self).on_received(topic, payload)
+
   def start(self):
     self._started_count += 1
 
     if self._started_count > 1:
       # If it has been already connected, just publish the on connected callback
-      
-      # TODO it may be tricky when sharing the pubsub on multiple adapters, wait & see but for the
-      # on connected topic, action are not destructive so that's not a big deal I guess
       return self.publish(ON_CONNECTED_TOPIC)
       
     if self._user:
@@ -110,8 +122,6 @@ class MQTTPubSub(PubSub):
     if self._started_count > 1:
       # More than one client still using it, just decrement the count
       self._started_count -= 1
-
-      # TODO maybe we should send the on disconnected topic here, but it's so tricky on multiple adapters...
     else:
       self._client.loop_stop()
       self._client.disconnect()
