@@ -1,5 +1,5 @@
 atlas-sdk |travis| |pypi| |license|
-=========
+===================================
 
 .. |travis| image:: https://travis-ci.org/atlassistant/atlas-sdk.svg?branch=next
     :target: https://travis-ci.org/atlassistant/atlas-sdk
