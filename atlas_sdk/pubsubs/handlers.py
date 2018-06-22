@@ -4,7 +4,7 @@ def notset(logger):
   """Returns a lambda which logs call without doing anything else.
 
   Args:
-    logger: (Logger): Logger to use
+    logger (Logger): Logger to use
   Returns:
     callable: Lambda which takes topic and data
 

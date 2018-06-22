@@ -9,6 +9,7 @@ META_LANG_KEY = '__lang'
 META_SETTINGS_KEY = '__settings'
 
 USER_ID_KEY = 'uid'
+SESSION_ID_KEY = 'sid'
 LANG_KEY = 'lang'
 
 TEXT_KEY = 'text'
