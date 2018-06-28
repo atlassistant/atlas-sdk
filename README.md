@@ -7,7 +7,9 @@ Python SDK for the [atlas](https://github.com/atlassistant/atlas) assistant!
 
 ### PIP
 
-`pip install atlas-sdk`
+You should use the version `< 2.0.0` with:
+
+`pip install atlas-sdk==1.1.8`
 
 ### Source
 
