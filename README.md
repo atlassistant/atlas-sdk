@@ -1,6 +1,8 @@
 atlas-sdk
 ===
 
+**⚠️ This project is mostly discontinued in favor of [pytlas](https://github.com/atlassistant/pytlas) ⚠️**
+
 Python SDK for the [atlas](https://github.com/atlassistant/atlas) assistant!
 
 ## Installation
